@@ -33,6 +33,11 @@
             <path fill="currentColor" d="M12 7v5.2L15 15l1.2-.7-3.2-2V7H12z"/>
           </svg>
         </button>
+        <button type="button" class="icon-btn icon-btn--store" id="storeBtn" aria-label="Open decor shop" title="decor shop">
+          <svg class="icon-btn__svg" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M4 7a2 2 0 0 1 2-2h2l1-2h6l1 2h2a2 2 0 0 1 2 2v1H4V7Zm0 3h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10Zm4 3v2h8v-2H8Z"/>
+          </svg>
+        </button>
       </div>
       <div class="app-top__brand">
         <span class="app-top__title">head empty</span>
@@ -160,17 +165,36 @@
           <div class="home-cloud" style="width:52px;height:18px;top:22%;left:42%"></div>
           <div class="home-cloud" style="width:88px;height:26px;top:12%;left:68%"></div>
 
-          <!-- FUTURE: shop places items into these slots (see Home.getFurnitureSlotElements()) -->
           <div id="furnitureSlotLayer" class="furniture-slot-layer"></div>
 
           <div id="residentLayer" class="resident-layer"></div>
         </div>
 
         <p class="home-hint">
-          residents pathfind around the grass — tap one to visit, feed, and chat. backgrounds &amp; furniture slots are wired in code — coming soon.
+          residents pathfind on the grass — tap one to visit. tap glowing spots to place decor you bought in the shop (counts like inventory).
         </p>
       </div>
     </section>
+
+    <div id="storeOverlay" class="store-overlay" hidden>
+      <div class="store-overlay__backdrop" id="storeBackdrop" tabindex="-1" aria-hidden="true"></div>
+      <div class="store-card" role="dialog" aria-modal="true" aria-labelledby="storeTitle">
+        <button type="button" class="store-close" id="storeCloseBtn" aria-label="Close shop">×</button>
+        <h2 class="store-title" id="storeTitle">decor shop</h2>
+        <p class="store-lede">spend coins on habitat stuff — each buy adds one to your inventory.</p>
+        <div id="storeList" class="store-list"></div>
+      </div>
+    </div>
+
+    <div id="decorPickOverlay" class="decor-pick-overlay" hidden>
+      <div class="decor-pick-overlay__backdrop" id="decorPickBackdrop" tabindex="-1" aria-hidden="true"></div>
+      <div class="decor-pick-card" role="dialog" aria-modal="true" aria-labelledby="decorPickTitle">
+        <h2 class="decor-pick-title" id="decorPickTitle">place decoration</h2>
+        <p class="decor-pick-sub" id="decorPickSub"></p>
+        <div id="decorPickList" class="decor-pick-list"></div>
+        <button type="button" class="btn btn--decor-pick-cancel" id="decorPickCancel">cancel</button>
+      </div>
+    </div>
 
     <!-- naming flow for new catches -->
     <div id="welcomeOverlay" class="welcome-overlay" hidden>
@@ -189,10 +213,12 @@
   </div>
 
   <script src="js/creatures.js"></script>
+  <script src="js/decorations.js"></script>
   <script src="js/home.js"></script>
   <script src="js/timer.js"></script>
   <script src="js/game.js"></script>
   <script src="js/creatureBond.js"></script>
+  <script src="js/store.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

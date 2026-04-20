@@ -7,7 +7,7 @@
 const Game = (() => {
   /* ── state ───────────────────────────────────── */
   let food    = 0;
-  let coins   = 0;
+  let coins   = 500;
   let caught  = 0;
   let foodAccumulator = 0;   // fractional food; 1 food per 10 active focus-seconds
 
@@ -36,6 +36,14 @@ const Game = (() => {
     if (food < amount) return false;
     food -= amount;
     _updateStat('foodStat', food);
+    return true;
+  }
+
+  /** Spend coins (e.g. decoration shop). @returns {boolean} */
+  function trySpendCoins(amount = 1) {
+    if (coins < amount) return false;
+    coins -= amount;
+    _updateStat('coinsStat', coins);
     return true;
   }
 
@@ -178,5 +186,6 @@ const Game = (() => {
     showNotif,
     getStats: () => ({ food, coins, caught }),
     trySpendFood,
+    trySpendCoins,
   };
 })();

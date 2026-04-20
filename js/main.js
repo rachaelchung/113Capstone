@@ -6,12 +6,15 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadCreatureCatalog();
+  await loadDecorationCatalog();
 
   CreatureBond.init();
   Home.init();
+  Store.init();
 
   const timerDock = document.getElementById('timerDock');
   const screenToggleBtn = document.getElementById('screenToggleBtn');
+  const storeBtn = document.getElementById('storeBtn');
   const navIconHome = document.getElementById('navIconHome');
   const navIconFocus = document.getElementById('navIconFocus');
   const menuBtn = document.getElementById('menuBtn');
@@ -70,6 +73,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     screenToggleBtn.addEventListener('click', () => {
       const next = screenToggleBtn.dataset.targetScreen === 'home' ? 'home' : 'focus';
       setScreen(next);
+    });
+  }
+
+  if (storeBtn) {
+    storeBtn.addEventListener('click', () => {
+      if (Store.isOpen()) Store.close();
+      else Store.open();
     });
   }
 

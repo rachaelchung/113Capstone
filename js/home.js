@@ -3,8 +3,7 @@
  * “My habitat” screen: pending catches → naming flow, resident creatures with
  * grid A* pathfinding, and extension hooks for backgrounds + furniture slots.
  *
- * Future wiring (not implemented): load/save `homeConfig` from backend or
- * localStorage; shop writes `backgroundId` / `furniturePlacements`.
+ * Decor slots + placements: `Store` + `data/decoration.json` (slot % layout).
  */
 
 const Home = (() => {
@@ -61,11 +60,13 @@ const Home = (() => {
     def.apply(layer);
   }
 
-  /* ── extension: furniture slots (empty placeholders) ─────────────────── */
-  const FURNITURE_SLOT_COUNT = 6;
+  /* ── furniture slots (ground-scattered; positions from decoration.json) ─ */
+
+  /** @type {number | null} */
+  let _decorPickSlot = null;
 
   /**
-   * Reserved DOM + hit areas for future shop items.
+   * Reserved DOM + hit areas for shop / editor tooling.
    * @returns {HTMLElement[]}
    */
   function getFurnitureSlotElements() {
@@ -422,29 +423,172 @@ const Home = (() => {
 
   function init() {
     _initFurnitureSlotPlaceholders();
+    _initDecorPickUi();
     window.addEventListener('resize', () => {
       _rebuildWalkGrid();
       for (const r of residents) _assignNewPath(r);
     });
   }
 
+  function _initDecorPickUi() {
+    const overlay = document.getElementById('decorPickOverlay');
+    const backdrop = document.getElementById('decorPickBackdrop');
+    const cancel = document.getElementById('decorPickCancel');
+    if (backdrop) backdrop.addEventListener('click', () => _closeDecorPick());
+    if (cancel) cancel.addEventListener('click', () => _closeDecorPick());
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay && !overlay.hidden) _closeDecorPick();
+    });
+  }
+
+  function _closeDecorPick() {
+    const overlay = document.getElementById('decorPickOverlay');
+    if (overlay) {
+      overlay.hidden = true;
+      overlay.classList.remove('decor-pick-overlay--open');
+    }
+    _decorPickSlot = null;
+  }
+
+  function _openDecorPick(slotIndex) {
+    if (typeof Store !== 'undefined' && Store.isOpen && Store.isOpen()) {
+      Store.close();
+    }
+    if (typeof Store === 'undefined') return;
+    const overlay = document.getElementById('decorPickOverlay');
+    const sub = document.getElementById('decorPickSub');
+    const list = document.getElementById('decorPickList');
+    if (!overlay || !sub || !list) return;
+
+    _decorPickSlot = slotIndex;
+    const placements = Store.getPlacements();
+    const current = placements[String(slotIndex)] || null;
+    const curItem = current ? getDecorationItem(current) : null;
+
+    sub.textContent = current && curItem
+      ? `${curItem.label} is here — pick up or swap with something you still have free.`
+      : 'choose a piece you still have available (owned minus already placed).';
+
+    list.innerHTML = '';
+
+    if (current) {
+      const pickUp = document.createElement('button');
+      pickUp.type = 'button';
+      pickUp.className = 'decor-pick-option decor-pick-option--muted';
+      pickUp.textContent = 'pick up (back to inventory)';
+      pickUp.addEventListener('click', () => {
+        Store.setSlotPlacement(slotIndex, null);
+        _closeDecorPick();
+      });
+      list.appendChild(pickUp);
+    }
+
+    let anyChoice = !!current;
+
+    for (const item of DECORATION_ITEMS) {
+      if (item.id === current) continue;
+      const avail = Store.availableToPlace(item.id);
+      if (avail <= 0) continue;
+      anyChoice = true;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'decor-pick-option';
+      const em = item.emoji || '📦';
+      btn.innerHTML = `<span class="decor-pick-emoji" aria-hidden="true">${em}</span><span class="decor-pick-label">${item.label}</span><span class="decor-pick-meta">${avail} to place</span>`;
+      btn.addEventListener('click', () => {
+        Store.setSlotPlacement(slotIndex, item.id);
+        _closeDecorPick();
+      });
+      list.appendChild(btn);
+    }
+
+    if (!anyChoice) {
+      const p = document.createElement('p');
+      p.className = 'decor-pick-empty';
+      p.textContent = 'nothing to place — open the shop and buy decor with coins.';
+      list.appendChild(p);
+    }
+
+    overlay.hidden = false;
+    overlay.classList.add('decor-pick-overlay--open');
+  }
+
+  function _syncSlotDomFromStore() {
+    const placements = typeof Store !== 'undefined' ? Store.getPlacements() : {};
+    for (const el of getFurnitureSlotElements()) {
+      const idx = el.dataset.furnitureSlot;
+      const decId = placements[idx] || null;
+      const item = decId ? getDecorationItem(decId) : null;
+      const marker = el.querySelector('.furniture-slot__marker');
+      const art = el.querySelector('.furniture-slot__art');
+
+      el.classList.toggle('furniture-slot--filled', !!item);
+      el.classList.toggle('furniture-slot--empty', !item);
+      el.setAttribute('aria-label', item ? `Decoration: ${item.label}. Tap to change.` : 'Empty decor spot. Tap to place.');
+      el.setAttribute('aria-hidden', 'false');
+
+      if (art) {
+        art.textContent = item ? (item.emoji || '📦') : '';
+        art.hidden = !item;
+      }
+      if (marker) marker.hidden = !!item;
+    }
+  }
+
+  function refreshFurnitureSlots() {
+    _syncSlotDomFromStore();
+    if (typeof Store !== 'undefined') Store.refreshStoreList();
+  }
+
   function _initFurnitureSlotPlaceholders() {
     const layer = document.getElementById('furnitureSlotLayer');
-    if (!layer || layer.dataset.initialized === '1') return;
+    if (!layer) return;
+
+    const n = typeof getSlotCount === 'function' ? getSlotCount() : 6;
+    const existing = layer.querySelectorAll('[data-furniture-slot]').length;
+    if (existing === n && layer.dataset.initialized === '1') {
+      _syncSlotDomFromStore();
+      return;
+    }
     layer.dataset.initialized = '1';
     layer.innerHTML = '';
-    for (let i = 0; i < FURNITURE_SLOT_COUNT; i++) {
+
+    const layout = typeof getSlotLayout === 'function' ? getSlotLayout() : [];
+    for (let i = 0; i < n; i++) {
+      const pos = layout[i] || { left: 8 + i * 14, bottom: 10 };
       const slot = document.createElement('div');
       slot.className = 'furniture-slot furniture-slot--empty';
       slot.dataset.furnitureSlot = String(i);
-      slot.setAttribute('aria-hidden', 'true');
+      slot.style.left = `${pos.left}%`;
+      slot.style.bottom = `${pos.bottom}%`;
+
+      const marker = document.createElement('span');
+      marker.className = 'furniture-slot__marker';
+      marker.setAttribute('aria-hidden', 'true');
+
+      const art = document.createElement('span');
+      art.className = 'furniture-slot__art';
+      art.hidden = true;
+
+      slot.appendChild(marker);
+      slot.appendChild(art);
+
+      slot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const homeScreen = document.getElementById('screen-home');
+        if (!homeScreen || !homeScreen.classList.contains('screen--active')) return;
+        _openDecorPick(i);
+      });
+
       layer.appendChild(slot);
     }
+    _syncSlotDomFromStore();
   }
 
   function enter() {
     _applyHomeBackground();
     _initFurnitureSlotPlaceholders();
+    _closeDecorPick();
     _rebuildWalkGrid();
     _syncAllResidentDOM();
 
@@ -454,6 +598,10 @@ const Home = (() => {
   }
 
   function leave() {
+    _closeDecorPick();
+    if (typeof Store !== 'undefined' && Store.isOpen && Store.isOpen()) {
+      Store.close();
+    }
     if (typeof CreatureBond !== 'undefined' && CreatureBond.isOpen && CreatureBond.isOpen()) {
       CreatureBond.close();
     }
@@ -498,5 +646,6 @@ const Home = (() => {
     setHomeBackgroundId,
     getFurnitureSlotElements,
     HOME_BACKGROUNDS,
+    refreshFurnitureSlots,
   };
 })();

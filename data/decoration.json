@@ -1,0 +1,42 @@
+{
+  "items": [
+    {
+      "id": "moss_rock",
+      "label": "moss rock",
+      "price": 8,
+      "emoji": "🪨"
+    },
+    {
+      "id": "toadstool",
+      "label": "toadstool seat",
+      "price": 12,
+      "emoji": "🍄"
+    },
+    {
+      "id": "lantern",
+      "label": "paper lantern",
+      "price": 15,
+      "emoji": "🏮"
+    },
+    {
+      "id": "flower_pot",
+      "label": "flower pot",
+      "price": 10,
+      "emoji": "🪴"
+    },
+    {
+      "id": "cushion",
+      "label": "sit cushion",
+      "price": 6,
+      "emoji": "🟣"
+    }
+  ],
+  "slots": [
+    { "left": 11, "bottom": 7 },
+    { "left": 26, "bottom": 16 },
+    { "left": 42, "bottom": 5 },
+    { "left": 55, "bottom": 20 },
+    { "left": 71, "bottom": 9 },
+    { "left": 86, "bottom": 18 }
+  ]
+}
