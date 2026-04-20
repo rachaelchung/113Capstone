@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2a2630" />
+  <title>head empty. no thoughts.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="app" id="app">
+
+    <header class="app-top">
+      <div class="app-top__tray" role="toolbar" aria-label="App menu and navigation">
+        <button type="button" class="icon-btn icon-btn--menu" id="menuBtn"
+          aria-label="Open menu" aria-expanded="false" aria-controls="sideMenu">
+          <span class="icon-btn__hamburger" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+        </button>
+        <button type="button" class="icon-btn icon-btn--screen" id="screenToggleBtn"
+          data-target-screen="home" aria-label="Go to my habitat">
+          <svg class="icon-btn__svg" id="navIconHome" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M4 10.5 12 3l8 7.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"/>
+          </svg>
+          <svg class="icon-btn__svg icon-btn__svg--hidden" id="navIconFocus" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path fill="currentColor" d="M12 7v5.2L15 15l1.2-.7-3.2-2V7H12z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="app-top__brand">
+        <span class="app-top__title">head empty</span>
+        <span class="app-top__dot" aria-hidden="true"></span>
+        <span class="app-top__subtitle">no thoughts</span>
+      </div>
+    </header>
+
+    <div id="sideMenu" class="side-menu" hidden>
+      <div class="side-menu__backdrop" id="sideMenuBackdrop" tabindex="-1" aria-hidden="true"></div>
+      <div class="side-menu__panel" role="dialog" aria-modal="true" aria-labelledby="sideMenuTitle">
+        <h2 class="side-menu__title" id="sideMenuTitle">menu</h2>
+        <p class="side-menu__hint">calendar, courses, and more will live here.</p>
+      </div>
+    </div>
+
+    <!-- floats above screens; hidden on home (timer paused there) -->
+    <aside id="timerDock" class="timer-dock" aria-label="Pomodoro timer">
+      <div class="timer-dock__inner">
+        <div class="timer-row timer-row--float">
+          <div class="timer-ring-wrap timer-ring-wrap--float">
+            <svg class="timer-svg" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="ring-track" cx="60" cy="60" r="50"/>
+              <circle class="ring-progress" id="progressRing" cx="60" cy="60" r="50"
+                stroke-dasharray="314" stroke-dashoffset="0"
+                transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="timer-display">
+              <div class="timer-time" id="timerDisplay">25:00</div>
+              <div class="phase-badge" id="phaseBadge">focus</div>
+            </div>
+          </div>
+          <div class="timer-side timer-side--float">
+            <div class="sessions" id="sessions">
+              <div class="session-dot active" id="sd0"></div>
+              <div class="session-dot" id="sd1"></div>
+              <div class="session-dot" id="sd2"></div>
+              <div class="session-dot" id="sd3"></div>
+            </div>
+            <div class="btn-group btn-group--float">
+              <button class="btn btn--start" id="startBtn">start</button>
+              <button class="btn btn--reset" id="resetBtn">reset</button>
+            </div>
+            <button class="btn btn--forbidden" id="forbiddenBtn">
+              simulate forbidden site
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- focus: timer + catch lane -->
+    <section id="screen-focus" class="screen screen--active" aria-label="Focus timer">
+      <div class="habitat habitat--focus" id="focusArena">
+        <div class="sky"></div>
+        <div class="ground"></div>
+        <div class="ground-stripe"></div>
+
+        <div class="tree" style="left:6%">
+          <div class="tree-leaves"></div>
+          <div class="tree-trunk"></div>
+        </div>
+        <div class="tree" style="right:9%">
+          <div class="tree-leaves tree-leaves--small"></div>
+          <div class="tree-trunk tree-trunk--short"></div>
+        </div>
+
+        <div class="cloud" style="width:62px;height:20px;top:18px;left:12%"></div>
+        <div class="cloud" style="width:44px;height:15px;top:34px;left:30%"></div>
+        <div class="cloud" style="width:72px;height:22px;top:12px;left:60%"></div>
+
+        <div class="forbidden-flash" id="forbiddenFlash">
+          <div class="forbidden-banner">forbidden site — timer paused</div>
+        </div>
+
+        <div class="notif" id="notif"></div>
+      </div>
+
+      <div class="controls">
+        <div class="stats-row">
+          <div class="stat">
+            <div class="stat-val" id="foodStat">0</div>
+            <div class="stat-label">food</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val" id="coinsStat">0</div>
+            <div class="stat-label">coins</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val" id="caughtStat">0</div>
+            <div class="stat-label">caught</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- home: wander + decorate (backgrounds & furniture hooks) -->
+    <section id="screen-home" class="screen" aria-label="Your habitat">
+      <div class="home-shell">
+        <div class="home-habitat" id="homeHabitat">
+          <div id="homeBgLayer" class="home-bg home-bg--default" aria-hidden="true"></div>
+          <div class="home-sky"></div>
+          <div class="home-sun" aria-hidden="true"></div>
+          <div class="home-ground"></div>
+          <div class="home-ground-stripe"></div>
+
+          <div class="home-tree" style="left:7%">
+            <div class="tree-leaves"></div>
+            <div class="tree-trunk"></div>
+          </div>
+          <div class="home-tree" style="right:8%">
+            <div class="tree-leaves tree-leaves--small"></div>
+            <div class="tree-trunk tree-trunk--short"></div>
+          </div>
+
+          <div class="home-cloud" style="width:70px;height:22px;top:14%;left:10%"></div>
+          <div class="home-cloud" style="width:52px;height:18px;top:22%;left:42%"></div>
+          <div class="home-cloud" style="width:88px;height:26px;top:12%;left:68%"></div>
+
+          <!-- FUTURE: shop places items into these slots (see Home.getFurnitureSlotElements()) -->
+          <div id="furnitureSlotLayer" class="furniture-slot-layer"></div>
+
+          <div id="residentLayer" class="resident-layer"></div>
+        </div>
+
+        <p class="home-hint">
+          residents pathfind around the grass. backgrounds &amp; furniture slots are wired in code — coming soon.
+        </p>
+      </div>
+    </section>
+
+    <!-- naming flow for new catches -->
+    <div id="welcomeOverlay" class="welcome-overlay" hidden>
+      <div class="welcome-card" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+        <h2 class="welcome-title" id="welcomeTitle">someone new arrived!</h2>
+        <p class="welcome-sub" id="welcomeSub"></p>
+        <div class="welcome-creature" id="welcomeCreature"></div>
+        <label class="welcome-label" for="welcomeNameInput">call them…</label>
+        <input type="text" id="welcomeNameInput" class="welcome-input" maxlength="28" autocomplete="off" />
+        <div class="welcome-actions">
+          <button type="button" class="btn btn--welcome-primary" id="welcomeBtnName">welcome in</button>
+          <button type="button" class="btn btn--welcome-secondary" id="welcomeBtnSkip">use default name</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/creatures.js"></script>
+  <script src="js/home.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
