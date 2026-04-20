@@ -33,7 +33,7 @@
             <path fill="currentColor" d="M12 7v5.2L15 15l1.2-.7-3.2-2V7H12z"/>
           </svg>
         </button>
-        <button type="button" class="icon-btn icon-btn--store" id="storeBtn" aria-label="Open decor shop" title="decor shop">
+        <button type="button" class="icon-btn icon-btn--store" id="storeBtn" aria-label="Open habitat shop" title="habitat shop">
           <svg class="icon-btn__svg" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor" d="M4 7a2 2 0 0 1 2-2h2l1-2h6l1 2h2a2 2 0 0 1 2 2v1H4V7Zm0 3h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10Zm4 3v2h8v-2H8Z"/>
           </svg>
@@ -99,7 +99,8 @@
 
     <!-- focus: timer + catch lane -->
     <section id="screen-focus" class="screen screen--active" aria-label="Focus timer">
-      <div class="habitat habitat--focus" id="focusArena">
+      <div class="habitat habitat--focus" id="focusArena" data-focus-bg="default">
+        <div id="focusBgLayer" class="focus-bg focus-bg--default" aria-hidden="true"></div>
         <div class="sky"></div>
         <div class="ground"></div>
         <div class="ground-stripe"></div>
@@ -180,9 +181,17 @@
       <div class="store-overlay__backdrop" id="storeBackdrop" tabindex="-1" aria-hidden="true"></div>
       <div class="store-card" role="dialog" aria-modal="true" aria-labelledby="storeTitle">
         <button type="button" class="store-close" id="storeCloseBtn" aria-label="Close shop">×</button>
-        <h2 class="store-title" id="storeTitle">decor shop</h2>
-        <p class="store-lede">spend coins on habitat stuff — each buy adds one to your inventory.</p>
-        <div id="storeList" class="store-list"></div>
+        <h2 class="store-title" id="storeTitle">habitat shop</h2>
+        <div class="store-tabs" role="tablist" aria-label="Shop categories">
+          <button type="button" class="store-tab store-tab--active" role="tab" id="storeTabDecor"
+            aria-selected="true" aria-controls="storeList" data-store-tab="decor">decor</button>
+          <button type="button" class="store-tab" role="tab" id="storeTabHomeBg"
+            aria-selected="false" aria-controls="storeList" data-store-tab="homeBg">home bg</button>
+          <button type="button" class="store-tab" role="tab" id="storeTabFocusBg"
+            aria-selected="false" aria-controls="storeList" data-store-tab="focusBg">focus bg</button>
+        </div>
+        <p class="store-lede" id="storeLede">placeable props — each buy adds one to your inventory.</p>
+        <div id="storeList" class="store-list" role="tabpanel" aria-labelledby="storeTabDecor"></div>
       </div>
     </div>
 
@@ -214,11 +223,13 @@
 
   <script src="js/creatures.js"></script>
   <script src="js/decorations.js"></script>
+  <script src="js/backgrounds.js"></script>
   <script src="js/home.js"></script>
   <script src="js/timer.js"></script>
   <script src="js/game.js"></script>
   <script src="js/creatureBond.js"></script>
   <script src="js/store.js"></script>
+  <script src="js/focusBg.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

@@ -391,6 +391,92 @@ body.is-timer-dragging {
   border: 3px solid rgba(255, 255, 255, 0.55);
 }
 
+.focus-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.focus-bg--default {
+  opacity: 0;
+}
+
+/* Focus lane themes — horizon ~62% (sky height 64% in default layout). */
+.focus-bg--neon_arcade {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse 100% 70% at 50% 0%, rgba(120, 255, 255, 0.35) 0%, transparent 45%),
+    linear-gradient(180deg,
+      #1a1030 0%,
+      #3d2068 38%,
+      #5a3a9a 58%,
+      #2a5080 63%,
+      #1a3a58 82%,
+      #0f1a30 100%);
+}
+
+.focus-bg--sunset_run {
+  opacity: 1;
+  background:
+    radial-gradient(circle at 70% 10%, rgba(255, 220, 160, 0.55) 0%, transparent 40%),
+    linear-gradient(180deg,
+      #ff8a5c 0%,
+      #ffb088 36%,
+      #ffd4b0 52%,
+      #c87850 62%,
+      #8a5038 80%,
+      #4a2818 100%);
+}
+
+.focus-bg--moonlit_track {
+  opacity: 1;
+  background:
+    radial-gradient(circle at 28% 8%, rgba(230, 240, 255, 0.45) 0%, transparent 38%),
+    linear-gradient(180deg,
+      #2a3548 0%,
+      #4a5a78 40%,
+      #7a8ca8 58%,
+      #4a6270 62%,
+      #3a5058 78%,
+      #1a2428 100%);
+}
+
+.focus-bg--lavender_speedway {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 0%, rgba(220, 200, 255, 0.5) 0%, transparent 48%),
+    linear-gradient(180deg,
+      #6a5a90 0%,
+      #9a8ac8 38%,
+      #c4b8e8 54%,
+      #7a88b0 61%,
+      #5a6888 78%,
+      #3a4058 100%);
+}
+
+.focus-bg--overcast_park {
+  opacity: 1;
+  background:
+    linear-gradient(180deg,
+      #7a8a98 0%,
+      #a0b0bc 42%,
+      #c8d4dc 56%,
+      #889878 62%,
+      #6a7a5a 78%,
+      #4a5848 100%);
+}
+
+.habitat--bg-custom .sky,
+.habitat--bg-custom .ground,
+.habitat--bg-custom .ground-stripe {
+  opacity: 0 !important;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
 .sky {
   position: absolute;
   inset: 0;
@@ -866,6 +952,92 @@ body.is-timer-dragging {
     radial-gradient(100% 80% at 50% -10%, rgba(255, 255, 255, 0.35) 0%, transparent 55%),
     linear-gradient(185deg, #9adfff 0%, #d9f4ff 45%, #f2fbff 100%);
   opacity: 0.55;
+}
+
+/* Full-bleed shop themes: horizon ~60% from top of #homeHabitat (match decor slot coords). */
+.home-bg--heath_mauve {
+  opacity: 0.93;
+  background:
+    radial-gradient(ellipse 100% 55% at 78% 8%, rgba(255, 210, 255, 0.5) 0%, transparent 42%),
+    linear-gradient(180deg,
+      #3d2f52 0%,
+      #6a4d7a 34%,
+      #9b6fa8 52%,
+      #c49bb8 60%,
+      #7a5568 64%,
+      #5c3f4d 78%,
+      #3d2a38 100%);
+}
+
+.home-bg--tide_pool {
+  opacity: 0.93;
+  background:
+    radial-gradient(ellipse 90% 50% at 20% 12%, rgba(200, 255, 255, 0.35) 0%, transparent 45%),
+    linear-gradient(180deg,
+      #7aa8c4 0%,
+      #a8d4e6 38%,
+      #d4eef8 55%,
+      #8ec5b0 60%,
+      #5a9a82 72%,
+      #3d6b58 100%);
+}
+
+.home-bg--apricot_mist {
+  opacity: 0.92;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255, 255, 220, 0.55) 0%, transparent 38%),
+    linear-gradient(180deg,
+      #ffb89a 0%,
+      #ffd4a8 36%,
+      #ffe8c8 52%,
+      #d4b878 60%,
+      #9db86a 74%,
+      #5a7a3e 100%);
+}
+
+.home-bg--wintery_pine {
+  opacity: 0.94;
+  background:
+    radial-gradient(ellipse 80% 45% at 50% 0%, rgba(220, 240, 255, 0.4) 0%, transparent 50%),
+    linear-gradient(180deg,
+      #5a6d82 0%,
+      #8a9db0 38%,
+      #b8c9d8 56%,
+      #6d8a72 61%,
+      #4a6b4e 78%,
+      #2d4034 100%);
+}
+
+.home-bg--blossom_orchard {
+  opacity: 0.92;
+  background:
+    radial-gradient(ellipse 120% 60% at 50% -5%, rgba(255, 192, 220, 0.55) 0%, transparent 48%),
+    linear-gradient(180deg,
+      #ffc4dd 0%,
+      #ffd6e8 40%,
+      #fff0f7 54%,
+      #c8e8a8 60%,
+      #7bc85a 76%,
+      #3d7a3a 100%);
+}
+
+.home-habitat--bg-custom .home-sky,
+.home-habitat--bg-custom .home-ground,
+.home-habitat--bg-custom .home-ground-stripe {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.home-habitat--bg-custom .home-sun {
+  opacity: 0.22;
+  transition: opacity 0.28s ease;
+}
+
+.home-habitat--bg-default .home-sky,
+.home-habitat--bg-default .home-ground,
+.home-habitat--bg-default .home-ground-stripe {
+  transition: opacity 0.28s ease;
 }
 
 .home-sky {
@@ -1414,12 +1586,48 @@ body.is-timer-dragging {
 }
 
 .store-title {
-  margin: 0 0 6px;
+  margin: 0 0 10px;
   font-size: 1.1rem;
   font-weight: 700;
   text-transform: lowercase;
   color: var(--text-primary);
   padding-right: 36px;
+}
+
+.store-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.store-tab {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--paper-edge);
+  background: rgba(255, 255, 255, 0.55);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.store-tab:hover {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text-primary);
+}
+
+.store-tab--active {
+  border-color: var(--pool);
+  background: rgba(223, 246, 252, 0.95);
+  color: #0d5a78;
+  box-shadow: 0 0 0 2px rgba(78, 198, 230, 0.2);
 }
 
 .store-lede {
@@ -1475,6 +1683,79 @@ body.is-timer-dragging {
   margin-top: 2px;
 }
 
+.store-row--bg {
+  align-items: center;
+}
+
+.store-row__actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 72px;
+}
+
+.store-swatch {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 2px solid var(--paper-edge);
+  box-shadow: 0 2px 0 rgba(42, 37, 48, 0.06);
+}
+
+.store-swatch--default {
+  background:
+    radial-gradient(80% 70% at 50% 0%, rgba(255, 255, 255, 0.5) 0%, transparent 55%),
+    linear-gradient(180deg, #9adfff 0%, #d9f4ff 55%, #9ad96f 100%);
+}
+
+.store-swatch--focus-default {
+  background:
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-low) 58%, #9ad96f 62%, var(--grass-dark) 100%);
+}
+
+.store-swatch--home-heath_mauve {
+  background: linear-gradient(180deg, #5a4070 0%, #b898c8 55%, #6a5060 62%, #3d2a38 100%);
+}
+
+.store-swatch--home-tide_pool {
+  background: linear-gradient(180deg, #7aa8c4 0%, #d4eef8 55%, #5a9a82 62%, #3d6b58 100%);
+}
+
+.store-swatch--home-apricot_mist {
+  background: linear-gradient(180deg, #ffb89a 0%, #ffe8c8 55%, #9db86a 62%, #5a7a3e 100%);
+}
+
+.store-swatch--home-wintery_pine {
+  background: linear-gradient(180deg, #5a6d82 0%, #b8c9d8 55%, #6d8a72 62%, #2d4034 100%);
+}
+
+.store-swatch--home-blossom_orchard {
+  background: linear-gradient(180deg, #ffc4dd 0%, #fff0f7 55%, #7bc85a 62%, #3d7a3a 100%);
+}
+
+.store-swatch--focus-neon_arcade {
+  background: linear-gradient(180deg, #2a1850 0%, #6a40a0 55%, #2a5080 62%, #0f1a30 100%);
+}
+
+.store-swatch--focus-sunset_run {
+  background: linear-gradient(180deg, #ff8a5c 0%, #ffd4b0 55%, #a86040 62%, #4a2818 100%);
+}
+
+.store-swatch--focus-moonlit_track {
+  background: linear-gradient(180deg, #2a3548 0%, #8a9cb8 55%, #4a6270 62%, #1a2428 100%);
+}
+
+.store-swatch--focus-lavender_speedway {
+  background: linear-gradient(180deg, #5a4880 0%, #c4b8e8 55%, #6a7898 62%, #3a4058 100%);
+}
+
+.store-swatch--focus-overcast_park {
+  background: linear-gradient(180deg, #7a8a98 0%, #c8d4dc 55%, #6a7a5a 62%, #4a5848 100%);
+}
+
 .btn--store-buy {
   flex-shrink: 0;
   padding: 8px 14px;
@@ -1498,6 +1779,20 @@ body.is-timer-dragging {
 
 .btn--store-buy:active {
   transform: translateY(1px);
+}
+
+.btn--store-buy:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+  border-color: var(--paper-edge);
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.btn--store-buy:disabled:hover {
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--text-muted);
 }
 
 .decor-pick-card {

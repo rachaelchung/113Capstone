@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#2a2630" />
+  <title>head empty — assignment tracker (prototype)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/tracker.css" />
+</head>
+<body class="tracker-body">
+
+  <div class="tracker-app">
+    <header class="tracker-top">
+      <div class="tracker-top__brand">
+        <span class="tracker-top__title">head empty</span>
+        <span class="tracker-top__dot" aria-hidden="true"></span>
+        <span class="tracker-top__subtitle">assignment tracker (prototype)</span>
+      </div>
+      <p class="tracker-top__meta">
+        separate from the habitat build · <a href="index.html" style="color:inherit;text-decoration:underline">back to game</a>
+      </p>
+    </header>
+
+    <nav class="tracker-tabs" aria-label="tracker sections">
+      <button type="button" class="tracker-tab tracker-tab--active" data-tracker-tab="weekly">weekly</button>
+      <button type="button" class="tracker-tab" data-tracker-tab="calendar">calendar</button>
+      <button type="button" class="tracker-tab" data-tracker-tab="todo">to-do</button>
+      <button type="button" class="tracker-tab" data-tracker-tab="courses">courses</button>
+    </nav>
+
+    <main class="tracker-main">
+      <section id="trackerWeekly" data-tracker-panel="weekly" class="tracker-panel"></section>
+      <section id="trackerCalendar" data-tracker-panel="calendar" class="tracker-panel" hidden></section>
+      <section id="trackerTodo" data-tracker-panel="todo" class="tracker-panel" hidden></section>
+      <section id="trackerCourses" data-tracker-panel="courses" class="tracker-panel" hidden></section>
+    </main>
+  </div>
+
+  <script src="js/trackerStore.js"></script>
+  <script src="js/trackerOllama.js"></script>
+  <script src="js/trackerMain.js"></script>
+</body>
+</html>

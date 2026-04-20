@@ -7,10 +7,13 @@
 document.addEventListener('DOMContentLoaded', async () => {
   await loadCreatureCatalog();
   await loadDecorationCatalog();
+  await loadBackgroundsCatalog();
 
   CreatureBond.init();
   Home.init();
   Store.init();
+  Home.syncBackgroundFromStore();
+  FocusBg.applyFromStore();
 
   const timerDock = document.getElementById('timerDock');
   const screenToggleBtn = document.getElementById('screenToggleBtn');

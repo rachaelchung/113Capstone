@@ -40,15 +40,54 @@ const Home = (() => {
         el.style.backgroundImage = '';
       },
     },
-    // future: meadow: { id, apply(el) { el.className = 'home-bg home-bg--meadow'; ... } },
   };
 
+  function _registerShopHomeBackgrounds() {
+    if (typeof HOME_BG_SHOP === 'undefined' || !HOME_BG_SHOP.length) return;
+    for (const row of HOME_BG_SHOP) {
+      const id = row.id;
+      if (HOME_BACKGROUNDS[id]) continue;
+      HOME_BACKGROUNDS[id] = {
+        id,
+        apply(el) {
+          el.className = `home-bg home-bg--${id}`;
+          el.style.backgroundImage = '';
+        },
+      };
+    }
+  }
+
+  function _syncHomeHabitatSkin() {
+    const hab = document.getElementById('homeHabitat');
+    if (!hab) return;
+    const custom = homeConfig.backgroundId !== 'default';
+    hab.classList.toggle('home-habitat--bg-custom', custom);
+    hab.classList.toggle('home-habitat--bg-default', !custom);
+  }
+
   function getHomeBackgroundId() {
+    if (typeof Store !== 'undefined' && Store.getSelectedHomeBackgroundId) {
+      return Store.getSelectedHomeBackgroundId();
+    }
     return homeConfig.backgroundId;
   }
 
   function setHomeBackgroundId(id) {
+    if (typeof Store !== 'undefined' && Store.setSelectedHomeBackgroundId) {
+      Store.setSelectedHomeBackgroundId(id);
+      return;
+    }
     if (!HOME_BACKGROUNDS[id]) return;
+    homeConfig.backgroundId = id;
+    _applyHomeBackground();
+  }
+
+  function syncBackgroundFromStore() {
+    let id = 'default';
+    if (typeof Store !== 'undefined' && Store.getSelectedHomeBackgroundId) {
+      id = Store.getSelectedHomeBackgroundId();
+    }
+    if (!HOME_BACKGROUNDS[id]) id = 'default';
     homeConfig.backgroundId = id;
     _applyHomeBackground();
   }
@@ -58,6 +97,7 @@ const Home = (() => {
     if (!layer) return;
     const def = HOME_BACKGROUNDS[homeConfig.backgroundId] || HOME_BACKGROUNDS.default;
     def.apply(layer);
+    _syncHomeHabitatSkin();
   }
 
   /* ── furniture slots (ground-scattered; positions from decoration.json) ─ */
@@ -422,6 +462,7 @@ const Home = (() => {
   /* ── lifecycle ───────────────────────────────────────────────────────── */
 
   function init() {
+    _registerShopHomeBackgrounds();
     _initFurnitureSlotPlaceholders();
     _initDecorPickUi();
     window.addEventListener('resize', () => {
@@ -586,7 +627,7 @@ const Home = (() => {
   }
 
   function enter() {
-    _applyHomeBackground();
+    syncBackgroundFromStore();
     _initFurnitureSlotPlaceholders();
     _closeDecorPick();
     _rebuildWalkGrid();
@@ -647,5 +688,6 @@ const Home = (() => {
     getFurnitureSlotElements,
     HOME_BACKGROUNDS,
     refreshFurnitureSlots,
+    syncBackgroundFromStore,
   };
 })();

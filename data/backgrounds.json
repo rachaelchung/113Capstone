@@ -1,0 +1,66 @@
+{
+  "home": [
+    {
+      "id": "heath_mauve",
+      "label": "heath mauve",
+      "price": 28,
+      "hint": "dusk violet sky over muted rose grass"
+    },
+    {
+      "id": "tide_pool",
+      "label": "tide pool",
+      "price": 28,
+      "hint": "misty teal sky and sea-glass turf"
+    },
+    {
+      "id": "apricot_mist",
+      "label": "apricot mist",
+      "price": 24,
+      "hint": "warm peach haze and honeyed green"
+    },
+    {
+      "id": "wintery_pine",
+      "label": "wintery pine",
+      "price": 32,
+      "hint": "cool slate air and deep evergreen ground"
+    },
+    {
+      "id": "blossom_orchard",
+      "label": "blossom orchard",
+      "price": 30,
+      "hint": "sakura pink wash over spring lawn"
+    }
+  ],
+  "focus": [
+    {
+      "id": "neon_arcade",
+      "label": "neon arcade",
+      "price": 26,
+      "hint": "violet night lane with cyan glow"
+    },
+    {
+      "id": "sunset_run",
+      "label": "sunset run",
+      "price": 24,
+      "hint": "ember sky and coral dust trail"
+    },
+    {
+      "id": "moonlit_track",
+      "label": "moonlit track",
+      "price": 30,
+      "hint": "silver moon haze over blue shadow grass"
+    },
+    {
+      "id": "lavender_speedway",
+      "label": "lavender speedway",
+      "price": 26,
+      "hint": "soft lilac dusk and periwinkle lane"
+    },
+    {
+      "id": "overcast_park",
+      "label": "overcast park",
+      "price": 22,
+      "hint": "rainy grey-blue sky and sage park floor"
+    }
+  ]
+}
