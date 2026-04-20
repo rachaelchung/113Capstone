@@ -1,56 +1,60 @@
 /**
  * creatures.js
- * Defines all creature types and builds their SVG markup.
- * Add new creatures here — the rest of the game picks them up automatically.
+ * Loads creature definitions from data/creatures.json (spawn table + catalog).
+ * Fallback: original five creatures if fetch fails (e.g. file://).
+ * Visuals: buildCreatureSVG() uses color, eyeWhite, pupil, shape only.
  */
 
-const CREATURE_TYPES = [
-  {
-    id: 'blobby',
-    label: 'blobby',
-    color: '#ff7043',
-    eyeWhite: '#ffffff',
-    pupil: '#333333',
-    shape: 'round',
-    rarity: 'common',
-  },
-  {
-    id: 'squish',
-    label: 'squish',
-    color: '#ab47bc',
-    eyeWhite: '#ffffff',
-    pupil: '#1a237e',
-    shape: 'wide',
-    rarity: 'common',
-  },
-  {
-    id: 'bouncy',
-    label: 'bouncy',
-    color: '#26a69a',
-    eyeWhite: '#ffffff',
-    pupil: '#004d40',
-    shape: 'tall',
-    rarity: 'common',
-  },
-  {
-    id: 'sparky',
-    label: 'sparky',
-    color: '#ffd600',
-    eyeWhite: '#ffffff',
-    pupil: '#333333',
-    shape: 'round',
-    rarity: 'uncommon',
-  },
-  {
-    id: 'raro',
-    label: 'raro',
-    color: '#ec407a',
-    eyeWhite: '#ffffff',
-    pupil: '#880e4f',
-    shape: 'wide',
-    rarity: 'rare',
-  },
+let CREATURE_TYPES = [];
+
+/** @type {{ rareTop: number, uncommonTop: number }} */
+let _spawnThresholds = { rareTop: 0.1, uncommonTop: 0.4 };
+
+const _FALLBACK_CREATURES = [
+  { id: 'blobby', label: 'blobby', color: '#ff7043', eyeWhite: '#ffffff', pupil: '#333333', shape: 'round', rarity: 'common', spawnWeight: 1 },
+  { id: 'squish', label: 'squish', color: '#ab47bc', eyeWhite: '#ffffff', pupil: '#1a237e', shape: 'wide', rarity: 'common', spawnWeight: 1 },
+  { id: 'bouncy', label: 'bouncy', color: '#26a69a', eyeWhite: '#ffffff', pupil: '#004d40', shape: 'tall', rarity: 'common', spawnWeight: 1 },
+  { id: 'sparky', label: 'sparky', color: '#ffd600', eyeWhite: '#ffffff', pupil: '#333333', shape: 'round', rarity: 'uncommon', spawnWeight: 1 },
+  { id: 'raro', label: 'raro', color: '#ec407a', eyeWhite: '#ffffff', pupil: '#880e4f', shape: 'wide', rarity: 'rare', spawnWeight: 1 },
 ];
+
+/**
+ * Load catalog from JSON. Safe to call multiple times; last successful load wins.
+ * @param {string} [url='data/creatures.json']
+ * @returns {Promise<void>}
+ */
+async function loadCreatureCatalog(url = 'data/creatures.json') {
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const list = Array.isArray(data.creatures) ? data.creatures : [];
+    if (!list.length) throw new Error('empty creatures');
+
+    CREATURE_TYPES = list.map(_normalizeCreatureRow);
+
+    const st = data.spawnTable || {};
+    const rareTop = typeof st.rareTop === 'number' ? st.rareTop : 0.1;
+    const uncommonTop = typeof st.uncommonTop === 'number' ? st.uncommonTop : 0.4;
+    _spawnThresholds = {
+      rareTop: Math.min(1, Math.max(0, rareTop)),
+      uncommonTop: Math.min(1, Math.max(0, uncommonTop)),
+    };
+    if (_spawnThresholds.uncommonTop < _spawnThresholds.rareTop) {
+      _spawnThresholds.uncommonTop = _spawnThresholds.rareTop;
+    }
+  } catch (err) {
+    console.warn('[creatures] using fallback catalog:', err && err.message ? err.message : err);
+    CREATURE_TYPES = _FALLBACK_CREATURES.map(_normalizeCreatureRow);
+    _spawnThresholds = { rareTop: 0.1, uncommonTop: 0.4 };
+  }
+}
+
+function _normalizeCreatureRow(row) {
+  const w = row.spawnWeight;
+  const spawnWeight = typeof w === 'number' && w > 0 && Number.isFinite(w) ? w : 1;
+  return { ...row, spawnWeight };
+}
 
 /**
  * Build SVG markup for a creature.
@@ -59,6 +63,9 @@ const CREATURE_TYPES = [
  * @returns {string}     - raw SVG string
  */
 function buildCreatureSVG(type, size = 40) {
+  if (!type) {
+    return `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg"></svg>`;
+  }
   const { color: c, eyeWhite: e, pupil: p, shape } = type;
 
   if (shape === 'wide') {
@@ -103,15 +110,32 @@ function buildCreatureSVG(type, size = 40) {
     </svg>`.trim();
 }
 
+function _weightedPick(pool) {
+  if (!pool.length) return null;
+  const weights = pool.map((t) => t.spawnWeight);
+  const sum = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * sum;
+  for (let i = 0; i < pool.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return pool[i];
+  }
+  return pool[pool.length - 1];
+}
+
 /**
- * Pick a random creature type, weighted by rarity.
- * common: 60%  |  uncommon: 30%  |  rare: 10%
+ * Pick a random creature type: rarity tier from spawnTable, then weighted spawnWeight within tier.
  */
 function pickRandomCreatureType() {
+  if (!CREATURE_TYPES.length) return null;
+
   const roll = Math.random();
+  const { rareTop, uncommonTop } = _spawnThresholds;
+
   const pool =
-    roll < 0.10 ? CREATURE_TYPES.filter(t => t.rarity === 'rare') :
-    roll < 0.40 ? CREATURE_TYPES.filter(t => t.rarity === 'uncommon') :
-                  CREATURE_TYPES.filter(t => t.rarity === 'common');
-  return pool[Math.floor(Math.random() * pool.length)];
+    roll < rareTop ? CREATURE_TYPES.filter((t) => t.rarity === 'rare') :
+    roll < uncommonTop ? CREATURE_TYPES.filter((t) => t.rarity === 'uncommon') :
+      CREATURE_TYPES.filter((t) => t.rarity === 'common');
+
+  const chosen = _weightedPick(pool.length ? pool : CREATURE_TYPES);
+  return chosen || CREATURE_TYPES[0];
 }

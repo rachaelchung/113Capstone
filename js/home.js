@@ -124,7 +124,11 @@ const Home = (() => {
     wrap.className = 'resident';
     wrap.dataset.residentId = r.id;
     wrap.innerHTML = buildCreatureSVG(type, 40);
-    wrap.title = r.name;
+    wrap.title = `${r.name} — tap to visit`;
+    wrap.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (typeof CreatureBond !== 'undefined') CreatureBond.openForResident(r);
+    });
     layer.appendChild(wrap);
     r.el = wrap;
     _positionResidentEl(r);
@@ -450,6 +454,9 @@ const Home = (() => {
   }
 
   function leave() {
+    if (typeof CreatureBond !== 'undefined' && CreatureBond.isOpen && CreatureBond.isOpen()) {
+      CreatureBond.close();
+    }
     _stopWander();
     const overlay = document.getElementById('welcomeOverlay');
     const btnName = document.getElementById('welcomeBtnName');
@@ -468,12 +475,25 @@ const Home = (() => {
     return residents.slice();
   }
 
+  function pauseResidents() {
+    _stopWander();
+  }
+
+  function resumeResidents() {
+    const homeScreen = document.getElementById('screen-home');
+    if (homeScreen && homeScreen.classList.contains('screen--active')) {
+      _startWander();
+    }
+  }
+
   return {
     init,
     enter,
     leave,
     notifyCatch,
     getResidents,
+    pauseResidents,
+    resumeResidents,
     getHomeBackgroundId,
     setHomeBackgroundId,
     getFurnitureSlotElements,

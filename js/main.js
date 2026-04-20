@@ -4,8 +4,10 @@
  * and binds all button click events.
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadCreatureCatalog();
 
+  CreatureBond.init();
   Home.init();
 
   const timerDock = document.getElementById('timerDock');
@@ -87,7 +89,134 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function initTimerDockDrag(dock) {
+    const handle = document.getElementById('timerDockHandle');
+    if (!handle) return;
+
+    const STORAGE_KEY = 'timerDockPos';
+    const margin = 8;
+
+    function readSaved() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const { l, t } = JSON.parse(raw);
+        if (typeof l !== 'number' || typeof t !== 'number' || Number.isNaN(l) || Number.isNaN(t)) {
+          return null;
+        }
+        return { l, t };
+      } catch {
+        return null;
+      }
+    }
+
+    function savePos(l, t) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ l: Math.round(l), t: Math.round(t) }));
+      } catch {
+        /* private mode / quota */
+      }
+    }
+
+    function layoutDock(left, top) {
+      const w = dock.offsetWidth;
+      const h = dock.offsetHeight;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      if (!w || !h) {
+        dock.style.left = `${Math.round(left)}px`;
+        dock.style.top = `${Math.round(top)}px`;
+        dock.style.right = 'auto';
+        dock.style.bottom = 'auto';
+        return { l: left, t: top };
+      }
+      const maxL = Math.max(margin, vw - w - margin);
+      const maxT = Math.max(margin, vh - h - margin);
+      const cl = Math.min(Math.max(margin, left), maxL);
+      const ct = Math.min(Math.max(margin, top), maxT);
+      dock.style.left = `${Math.round(cl)}px`;
+      dock.style.top = `${Math.round(ct)}px`;
+      dock.style.right = 'auto';
+      dock.style.bottom = 'auto';
+      return { l: cl, t: ct };
+    }
+
+    function clampFromResize() {
+      if (dock.style.left === '') return;
+      const l = parseFloat(dock.style.left);
+      const t = parseFloat(dock.style.top);
+      if (Number.isNaN(l) || Number.isNaN(t)) return;
+      layoutDock(l, t);
+    }
+
+    const saved = readSaved();
+    if (saved) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => layoutDock(saved.l, saved.t));
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      requestAnimationFrame(clampFromResize);
+    });
+
+    let drag = null;
+
+    handle.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') e.preventDefault();
+    });
+
+    handle.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      const r = dock.getBoundingClientRect();
+      drag = {
+        id: e.pointerId,
+        x0: e.clientX,
+        y0: e.clientY,
+        l0: r.left,
+        t0: r.top,
+      };
+      try {
+        handle.setPointerCapture(e.pointerId);
+      } catch {
+        /* noop */
+      }
+      dock.classList.add('timer-dock--dragging');
+      document.body.classList.add('is-timer-dragging');
+      e.preventDefault();
+    });
+
+    handle.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x0;
+      const dy = e.clientY - drag.y0;
+      layoutDock(drag.l0 + dx, drag.t0 + dy);
+    });
+
+    function endDrag(e) {
+      if (!drag) return;
+      if (e && typeof e.pointerId === 'number' && e.pointerId !== drag.id) return;
+      const pid = drag.id;
+      try {
+        handle.releasePointerCapture(pid);
+      } catch {
+        /* noop */
+      }
+      const l = parseFloat(dock.style.left);
+      const t = parseFloat(dock.style.top);
+      if (!Number.isNaN(l) && !Number.isNaN(t)) savePos(l, t);
+      dock.classList.remove('timer-dock--dragging');
+      document.body.classList.remove('is-timer-dragging');
+      drag = null;
+    }
+
+    handle.addEventListener('pointerup', endDrag);
+    handle.addEventListener('pointercancel', endDrag);
+  }
+
   setScreen('focus');
+
+  if (timerDock) initTimerDockDrag(timerDock);
 
   /* ── wire Timer callbacks to Game ──────────── */
 

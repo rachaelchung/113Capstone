@@ -51,34 +51,42 @@
 
     <!-- floats above screens; hidden on home (timer paused there) -->
     <aside id="timerDock" class="timer-dock" aria-label="Pomodoro timer">
-      <div class="timer-dock__inner">
-        <div class="timer-row timer-row--float">
-          <div class="timer-ring-wrap timer-ring-wrap--float">
-            <svg class="timer-svg" viewBox="0 0 120 120" aria-hidden="true">
-              <circle class="ring-track" cx="60" cy="60" r="50"/>
-              <circle class="ring-progress" id="progressRing" cx="60" cy="60" r="50"
-                stroke-dasharray="314" stroke-dashoffset="0"
-                transform="rotate(-90 60 60)"/>
-            </svg>
-            <div class="timer-display">
-              <div class="timer-time" id="timerDisplay">25:00</div>
-              <div class="phase-badge" id="phaseBadge">focus</div>
+      <div class="timer-dock__shell">
+        <div class="timer-dock__handle" id="timerDockHandle" role="button" tabindex="0"
+          aria-label="Drag to move timer" title="drag to move">
+          <span class="timer-dock__grip" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+        </div>
+        <div class="timer-dock__inner">
+          <div class="timer-row timer-row--float">
+            <div class="timer-ring-wrap timer-ring-wrap--float">
+              <svg class="timer-svg" viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="ring-track" cx="60" cy="60" r="50"/>
+                <circle class="ring-progress" id="progressRing" cx="60" cy="60" r="50"
+                  stroke-dasharray="314" stroke-dashoffset="0"
+                  transform="rotate(-90 60 60)"/>
+              </svg>
+              <div class="timer-display">
+                <div class="timer-time" id="timerDisplay">25:00</div>
+                <div class="phase-badge" id="phaseBadge">focus</div>
+              </div>
             </div>
-          </div>
-          <div class="timer-side timer-side--float">
-            <div class="sessions" id="sessions">
-              <div class="session-dot active" id="sd0"></div>
-              <div class="session-dot" id="sd1"></div>
-              <div class="session-dot" id="sd2"></div>
-              <div class="session-dot" id="sd3"></div>
+            <div class="timer-side timer-side--float">
+              <div class="sessions" id="sessions">
+                <div class="session-dot active" id="sd0"></div>
+                <div class="session-dot" id="sd1"></div>
+                <div class="session-dot" id="sd2"></div>
+                <div class="session-dot" id="sd3"></div>
+              </div>
+              <div class="btn-group btn-group--float">
+                <button class="btn btn--start" id="startBtn">start</button>
+                <button class="btn btn--reset" id="resetBtn">reset</button>
+              </div>
+              <button class="btn btn--forbidden" id="forbiddenBtn">
+                simulate forbidden site
+              </button>
             </div>
-            <div class="btn-group btn-group--float">
-              <button class="btn btn--start" id="startBtn">start</button>
-              <button class="btn btn--reset" id="resetBtn">reset</button>
-            </div>
-            <button class="btn btn--forbidden" id="forbiddenBtn">
-              simulate forbidden site
-            </button>
           </div>
         </div>
       </div>
@@ -159,7 +167,7 @@
         </div>
 
         <p class="home-hint">
-          residents pathfind around the grass. backgrounds &amp; furniture slots are wired in code — coming soon.
+          residents pathfind around the grass — tap one to visit, feed, and chat. backgrounds &amp; furniture slots are wired in code — coming soon.
         </p>
       </div>
     </section>
@@ -184,6 +192,7 @@
   <script src="js/home.js"></script>
   <script src="js/timer.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/creatureBond.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

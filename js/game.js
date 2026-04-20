@@ -31,6 +31,14 @@ const Game = (() => {
     _updateStat('coinsStat', coins);
   }
 
+  /** Spend food (e.g. feeding a resident). @returns {boolean} */
+  function trySpendFood(amount = 1) {
+    if (food < amount) return false;
+    food -= amount;
+    _updateStat('foodStat', food);
+    return true;
+  }
+
   /* ── forbidden mode ──────────────────────────── */
 
   function setForbidden(isForbidden) {
@@ -169,5 +177,6 @@ const Game = (() => {
     stopSpawning,
     showNotif,
     getStats: () => ({ food, coins, caught }),
+    trySpendFood,
   };
 })();

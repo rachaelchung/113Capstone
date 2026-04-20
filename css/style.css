@@ -239,22 +239,84 @@ body {
   text-transform: lowercase;
 }
 
-/* floating pomodoro — reuse timer styles; anchored for future extra screens */
+/* floating pomodoro — draggable dock; anchored for future extra screens */
 .timer-dock {
   position: fixed;
   z-index: 45;
   top: calc(52px + env(safe-area-inset-top, 0));
   right: calc(10px + env(safe-area-inset-right, 0));
+  left: auto;
   width: min(520px, calc(100vw - 20px));
   box-sizing: border-box;
-  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  transition: opacity 0.25s ease, visibility 0.25s;
+}
+
+.timer-dock--dragging {
+  transition: none !important;
+}
+
+.timer-dock--dragging .timer-dock__handle {
+  cursor: grabbing;
 }
 
 .timer-dock--hidden {
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-6px);
+}
+
+.timer-dock__shell {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 26px;
+  overflow: hidden;
+  background: linear-gradient(165deg, #4a4558 0%, #2f2c3a 45%, #25232e 100%);
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.28) inset,
+    0 20px 44px rgba(12, 10, 22, 0.45),
+    0 10px 0 rgba(25, 22, 35, 0.18);
+}
+
+.timer-dock__handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(0, 0, 0, 0.12) 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.timer-dock__handle:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(0, 0, 0, 0.08) 100%);
+}
+
+.timer-dock__handle:focus {
+  outline: none;
+}
+
+.timer-dock__handle:focus-visible {
+  box-shadow: inset 0 0 0 2px rgba(255, 213, 79, 0.55);
+}
+
+.timer-dock__grip {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.timer-dock__grip span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .timer-dock__inner {
@@ -262,11 +324,11 @@ body {
   box-sizing: border-box;
   padding: 14px 18px 16px;
   background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
-  border-radius: 22px;
-  border: 3px solid var(--paper-edge);
-  box-shadow: var(--shadow-soft), var(--shadow-lift);
+  border-radius: 0 0 22px 22px;
+  border: none;
+  border-top: 2px solid rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
   position: relative;
-  clip-path: inset(0 round 22px);
 }
 
 .timer-dock__inner::before {
@@ -283,6 +345,12 @@ body {
 .timer-dock__inner > * {
   position: relative;
   z-index: 1;
+}
+
+body.is-timer-dragging {
+  cursor: grabbing;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .timer-ring-wrap--float {
@@ -1029,4 +1097,217 @@ body {
   0%   { transform: scale(0); }
   70%  { transform: scale(1.25); }
   100% { transform: scale(1); }
+}
+
+/* ── creature bond panel (habitat) ─────────── */
+.creature-bond-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(18, 15, 28, 0.45);
+  backdrop-filter: blur(5px);
+}
+
+.creature-bond-overlay[hidden] {
+  display: none;
+}
+
+.creature-bond-overlay--open {
+  animation: welcomeFade 0.22s ease-out;
+}
+
+.creature-bond-backdrop {
+  position: absolute;
+  inset: 0;
+}
+
+.creature-bond-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 400px);
+  max-height: min(92dvh, 640px);
+  overflow: auto;
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+  border-radius: 24px;
+  border: 3px solid var(--paper-edge);
+  box-shadow: var(--shadow-soft), var(--shadow-lift);
+  padding: 20px 20px 22px;
+  text-align: left;
+}
+
+.creature-bond-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 2px solid var(--paper-edge);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s, color 0.15s, transform 0.12s;
+}
+
+.creature-bond-close:hover {
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.creature-bond-close:active {
+  transform: scale(0.95);
+}
+
+.creature-bond-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-right: 36px;
+}
+
+.creature-bond-preview {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.creature-bond-head {
+  min-width: 0;
+}
+
+.creature-bond-name {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: lowercase;
+  color: var(--text-primary);
+}
+
+.creature-bond-species,
+.creature-bond-personality {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.creature-bond-personality {
+  margin-top: 4px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.creature-bond-meter-wrap {
+  margin-top: 12px;
+}
+
+.creature-bond-meter-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  color: var(--text-hint);
+  margin-bottom: 6px;
+}
+
+.creature-bond-meter {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  border: 2px solid var(--paper-edge);
+  overflow: hidden;
+}
+
+.creature-bond-meter-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--pool) 0%, var(--mint) 100%);
+  transition: width 0.35s ease-out;
+}
+
+.creature-bond-tierline {
+  margin: 10px 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.creature-bond-msg {
+  margin: 12px 0 0;
+  min-height: 2.8em;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+
+.creature-bond-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.btn--bond {
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-transform: lowercase;
+  padding: 11px 16px;
+  border-radius: 16px;
+  border: 2px solid var(--paper-edge);
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.12s, opacity 0.15s;
+}
+
+.btn--bond-feed {
+  border-color: var(--mint);
+  background: var(--mint-soft);
+  color: #1b4d30;
+  box-shadow: 0 4px 0 rgba(42, 37, 48, 0.08);
+}
+
+.btn--bond-pet {
+  border-color: var(--pool);
+  background: var(--pool-soft);
+  color: #0d3d4d;
+  box-shadow: 0 4px 0 rgba(42, 37, 48, 0.06);
+}
+
+.btn--bond-chat {
+  border-color: #e0d4f5;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
+  box-shadow: 0 3px 0 rgba(42, 37, 48, 0.06);
+}
+
+.btn--bond:hover:not(:disabled) {
+  filter: brightness(1.03);
+}
+
+.btn--bond:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.btn--bond:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.creature-bond-foodhint {
+  margin: 12px 0 0;
+  font-size: 0.72rem;
+  color: var(--text-hint);
+  line-height: 1.4;
 }
