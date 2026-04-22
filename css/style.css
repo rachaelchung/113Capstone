@@ -1,10 +1,14 @@
 /* ── tokens ─────────────────────────────────── */
 :root {
+  /* aligns habitat UI + creatures with marketing index.html */
+  --cartoon-ink:   #1a1208;
+  --cartoon-shadow: 4px 4px 0 rgba(26, 18, 8, 0.22);
+
   --ink:          #1e1c24;
   --ink-soft:     #2a2630;
-  --paper:        #faf6ef;
-  --paper-2:      #f0ebe3;
-  --paper-edge:   #e3dcd2;
+  --paper:        #fdf6ec;
+  --paper-2:      #f5e9d3;
+  --paper-edge:   #d4c4b0;
 
   --sun:          #ffd54f;
   --sun-glow:     #fff59d;
@@ -42,7 +46,7 @@ html {
 }
 
 body {
-  font-family: 'Fredoka', system-ui, sans-serif;
+  font-family: 'Nunito', 'Fredoka', system-ui, sans-serif;
   background:
     radial-gradient(100% 120% at 0% 0%, #4a3f62 0%, transparent 50%),
     radial-gradient(80% 100% at 100% 10%, #3d4f6e 0%, transparent 45%),
@@ -102,7 +106,8 @@ body {
 }
 
 .app-top__title {
-  font-weight: 700;
+  font-family: 'Fredoka One', 'Fredoka', cursive;
+  font-weight: 400;
   font-size: clamp(1.05rem, 2.8vw, 1.35rem);
   text-transform: lowercase;
 }
@@ -237,6 +242,73 @@ body {
   line-height: 1.45;
   color: rgba(245, 240, 255, 0.72);
   text-transform: lowercase;
+}
+
+.side-menu__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.side-menu__section-label {
+  margin: 14px 0 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(245, 240, 255, 0.45);
+}
+
+.side-menu__section-label:first-of-type {
+  margin-top: 4px;
+}
+
+.side-menu__nav .side-menu__nav-btn {
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(252, 248, 255, 0.95);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+}
+
+.side-menu__nav .side-menu__nav-btn:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+
+.side-menu__nav .side-menu__nav-btn:active {
+  transform: scale(0.99);
+}
+
+/* tracker tab pills inside drawer reuse .tracker-tab from tracker.css */
+.side-menu__nav .tracker-tab {
+  border-radius: 999px;
+}
+
+/* integrated assignment tracker under main header */
+.screen.screen--tracker.screen--active {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 10px 14px;
+}
+
+.tracker-main--embed {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 4px;
 }
 
 /* floating pomodoro — draggable dock; anchored for future extra screens */
@@ -568,10 +640,10 @@ body.is-timer-dragging {
   cursor: pointer;
   transition: transform 0.1s;
   user-select: none;
-  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.12));
+  filter: drop-shadow(2px 2px 0 rgba(26, 18, 8, 0.28));
 }
 
-.creature:hover { transform: scale(1.12) translateY(-2px); }
+.creature:hover { transform: scale(1.2) translateY(-4px); }
 
 .catch-burst {
   position: absolute;
@@ -1170,6 +1242,7 @@ body.is-timer-dragging {
   transform: translateX(-50%);
   pointer-events: auto;
   will-change: left, bottom;
+  filter: drop-shadow(2px 2px 0 rgba(26, 18, 8, 0.22));
 }
 
 .home-hint {
@@ -1211,9 +1284,9 @@ body.is-timer-dragging {
 .welcome-card {
   width: min(100%, 380px);
   background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
-  border-radius: 24px;
-  border: 3px solid var(--paper-edge);
-  box-shadow: var(--shadow-soft), var(--shadow-lift);
+  border-radius: 20px;
+  border: 3px solid var(--cartoon-ink);
+  box-shadow: var(--shadow-soft), var(--cartoon-shadow);
   padding: 22px 22px 24px;
   text-align: center;
 }
@@ -1338,9 +1411,9 @@ body.is-timer-dragging {
   max-height: min(92dvh, 640px);
   overflow: auto;
   background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
-  border-radius: 24px;
-  border: 3px solid var(--paper-edge);
-  box-shadow: var(--shadow-soft), var(--shadow-lift);
+  border-radius: 20px;
+  border: 3px solid var(--cartoon-ink);
+  box-shadow: var(--shadow-soft), var(--cartoon-shadow);
   padding: 20px 20px 22px;
   text-align: left;
 }

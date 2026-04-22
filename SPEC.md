@@ -93,7 +93,7 @@ AI manually fills in assignments when syllabus are updated to courses the user c
 - To prevent data conflicts between AI parsing and school systems:
 - User Manual Override: If the user manually edits a date, it stays.
 - Canvas/Gradescope API: Overwrites syllabus data if a discrepancy is found.
-- Ollama Syllabus Parse: Initial "best guess" to populate the calendar at the start of the semester.
+- GPT syllabus parse (via your backend): Initial "best guess" to populate the calendar at the start of the semester.
 
 
 ### Entities
@@ -121,15 +121,15 @@ AI manually fills in assignments when syllabus are updated to courses the user c
 
 ## API & Backend
 
-Ollama API for parsing syllabus, fallback to gpt mini
+OpenAI (Chat Completions) for syllabus parsing and weekly planning suggestions, called only from a **Python backend** so the API key is never shipped to browsers.
 
-Backend to store a database of users, and all the assignments
+Backend to store a database of users, and all the assignments (Render-hosted in the full product).
 
 ## Privacy Note
 
-Transparency: A toggle in the settings will allow users to choose between "Local AI" (requires Ollama setup) and "Cloud AI" (instant setup).
+Transparency: Syllabus text is sent to your backend, which calls OpenAI for extraction. Users should know their syllabus content leaves the device for that step (subject to OpenAI’s data policies for your account tier).
 
-Data Handling: Syllabi processed via the Cloud API are sent only for extraction and are not stored on the AI provider's servers (using API "zero-retention" policies).
+Data Handling: Prefer not logging raw syllabi on the server; store only the structured assignments you persist for the user.
 
 ## Design & Branding
 
@@ -148,7 +148,7 @@ For now, collectable creatures can be represented by shapes of various colors wi
     - Phase 2 (Web/Dashboard): A central hub for syllabus uploading and grade viewing.
 
 - Backend: Render-hosted DB to sync data between the extension and the web dashboard.
-- AI: Ollama for local parsing (Web/Desktop) or a fallback cloud API for the extension. 
+- AI: OpenAI via the Python backend (same API key pattern as other server-side integrations).
 
 Logins should work across platforms, based on a backend hosted on Render. Frontend hosted on GitHub Pages for web and used on ExpoGo for iOS.
 
@@ -158,7 +158,7 @@ The app has an overlay over other apps. While you are in focus, you can see the 
 
 ## Offline Behavior
 
-You should still be able to do all functionalities offline. AI is handled by Ollama.
+Core tracker UI (calendar, todos, weekly board) can work offline in the browser with cached/local data. Syllabus parsing and AI weekly suggestions require network access to your backend (which calls OpenAI).
 
 ## Analytics & Monitoring
 

@@ -33,9 +33,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
+  function clearTrackerMenuTabHighlight() {
+    document.querySelectorAll('[data-tracker-tab]').forEach((btn) => {
+      btn.classList.remove('tracker-tab--active');
+    });
+  }
+
+  function syncTrackerMenuTabHighlight() {
+    if (window.HeadEmptyTracker) {
+      HeadEmptyTracker.setTab(HeadEmptyTracker.getActiveTab());
+    }
+  }
+
   function setScreen(name) {
     document.querySelectorAll('.screen').forEach((el) => {
-      el.classList.toggle('screen--active', el.id === `screen-${name}`);
+      if (!el.id.startsWith('screen-')) return;
+      const key = el.id.replace(/^screen-/, '');
+      el.classList.toggle('screen--active', key === name);
     });
 
     const onHome = name === 'home';
@@ -50,14 +64,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
       if (timerDock) timerDock.classList.add('timer-dock--hidden');
+      clearTrackerMenuTabHighlight();
     } else {
       if (timerDock) timerDock.classList.remove('timer-dock--hidden');
+      if (name === 'tracker') syncTrackerMenuTabHighlight();
+      else clearTrackerMenuTabHighlight();
     }
 
     if (screenToggleBtn && navIconHome && navIconFocus) {
       if (onHome) {
         screenToggleBtn.dataset.targetScreen = 'focus';
-        screenToggleBtn.setAttribute('aria-label', 'Back to focus');
+        screenToggleBtn.setAttribute('aria-label', 'Go to focus timer');
         navIconHome.classList.add('icon-btn__svg--hidden');
         navIconFocus.classList.remove('icon-btn__svg--hidden');
       } else {
@@ -70,6 +87,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (name === 'home') Home.enter();
     else Home.leave();
+  }
+
+  if (sideMenu) {
+    sideMenu.addEventListener('click', (e) => {
+      const navBtn = e.target.closest('[data-app-screen], [data-tracker-tab]');
+      if (!navBtn || !sideMenu.contains(navBtn)) return;
+      const screen = navBtn.dataset.appScreen;
+      const tab = navBtn.dataset.trackerTab;
+      if (screen === 'home' || screen === 'focus') {
+        setScreen(screen);
+        setMenuOpen(false);
+        return;
+      }
+      if (tab) {
+        setScreen('tracker');
+        if (window.HeadEmptyTracker) HeadEmptyTracker.setTab(tab);
+        setMenuOpen(false);
+      }
+    });
   }
 
   if (screenToggleBtn) {
@@ -227,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     handle.addEventListener('pointercancel', endDrag);
   }
 
-  setScreen('focus');
+  setScreen('home');
 
   if (timerDock) initTimerDockDrag(timerDock);
 
