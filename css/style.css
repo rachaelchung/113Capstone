@@ -83,7 +83,115 @@ body {
   display: flex;
 }
 
-/* ── top bar ────────────────────────────────── */
+/* ── focus screen: full-viewport arena; header / stats / timer float above ─ */
+#screen-focus.screen--active {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  flex-direction: column;
+  min-height: 100dvh;
+  min-height: 100svh;
+  padding: 0;
+}
+
+#screen-focus.screen--active #focusArena.habitat {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}
+
+#screen-focus.screen--active .controls {
+  position: fixed;
+  z-index: 40;
+  left: max(12px, env(safe-area-inset-left, 0));
+  right: max(12px, env(safe-area-inset-right, 0));
+  bottom: max(12px, env(safe-area-inset-bottom, 0));
+  margin: 0 auto;
+  width: min(520px, calc(100vw - 24px));
+  max-width: min(520px, calc(100vw - 24px));
+  box-sizing: border-box;
+}
+
+body:has(#screen-focus.screen--active) .timer-dock,
+body:has(#screen-home.screen--active) .timer-dock {
+  top: calc(56px + env(safe-area-inset-top, 0));
+}
+
+/* ── home screen: full-viewport habitat; hint floats at bottom ─ */
+#screen-home.screen--active {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  flex-direction: column;
+  min-height: 100dvh;
+  min-height: 100svh;
+  padding: 0;
+}
+
+#screen-home.screen--active .home-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  gap: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#screen-home.screen--active .home-habitat {
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}
+
+#screen-home.screen--active .home-hint {
+  position: fixed;
+  z-index: 40;
+  left: max(12px, env(safe-area-inset-left, 0));
+  right: max(12px, env(safe-area-inset-right, 0));
+  bottom: max(12px, env(safe-area-inset-bottom, 0));
+  margin: 0 auto;
+  max-width: min(640px, calc(100vw - 24px));
+  width: min(640px, calc(100vw - 24px));
+  box-sizing: border-box;
+  padding: 10px 16px 12px;
+  background: rgba(18, 14, 28, 0.5);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* Float top bar over home habitat (same as focus) */
+body:has(#screen-focus.screen--active) .app-top,
+body:has(#screen-home.screen--active) .app-top {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: calc(14px + env(safe-area-inset-top, 0)) calc(18px + env(safe-area-inset-right, 0)) 10px
+    calc(18px + env(safe-area-inset-left, 0));
+  background: linear-gradient(
+    180deg,
+    rgba(20, 16, 32, 0.62) 0%,
+    rgba(20, 16, 32, 0.22) 70%,
+    rgba(20, 16, 32, 0) 100%
+  );
+  pointer-events: none;
+}
+
+body:has(#screen-focus.screen--active) .app-top *,
+body:has(#screen-home.screen--active) .app-top * {
+  pointer-events: auto;
+}
+
+/* ── top bar (base — non-floating when tracker etc.) ───────────────── */
 .app-top {
   flex-shrink: 0;
   display: flex;
@@ -337,6 +445,93 @@ body {
   pointer-events: none;
 }
 
+/* Pinned to right edge: narrow tab, expand via same button or shell tap */
+.timer-dock--minimized {
+  top: 50% !important;
+  left: auto !important;
+  right: max(0px, env(safe-area-inset-right, 0)) !important;
+  width: 58px !important;
+  min-width: 58px;
+  max-width: 58px;
+  transform: translateY(-50%) !important;
+  transition: width 0.2s ease, transform 0.2s ease, right 0.2s ease;
+}
+
+body:has(#screen-focus.screen--active) .timer-dock.timer-dock--minimized,
+body:has(#screen-home.screen--active) .timer-dock.timer-dock--minimized,
+.timer-dock.timer-dock--minimized {
+  top: 50% !important;
+  right: max(0px, env(safe-area-inset-right, 0)) !important;
+  transform: translateY(-50%) !important;
+}
+
+.timer-dock--minimized .timer-dock__shell {
+  border-radius: 20px 0 0 20px;
+  cursor: pointer;
+}
+
+.timer-dock--minimized .timer-dock__handle {
+  padding: 0 2px 0 4px;
+  cursor: pointer;
+}
+
+.timer-dock--minimized .timer-dock__handle-spacer,
+.timer-dock--minimized .timer-dock__grip {
+  display: none;
+}
+
+.timer-dock--minimized .timer-dock__pin-btn {
+  width: 100%;
+  min-height: 28px;
+  border-radius: 10px;
+  margin: 0 2px;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+/* compact inner: time + phase only, controls hidden (still in DOM for a11y if needed) */
+.timer-dock--minimized .timer-dock__inner {
+  padding: 8px 4px 10px;
+  border-radius: 0 0 0 18px;
+}
+
+.timer-dock--minimized .timer-row--float {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.timer-dock--minimized .timer-ring-wrap--float {
+  width: 44px;
+  height: 44px;
+}
+
+.timer-dock--minimized .timer-dock__inner .timer-svg {
+  opacity: 0.88;
+}
+
+.timer-dock--minimized .timer-side--float {
+  display: none !important;
+}
+
+.timer-dock--minimized .timer-time {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+.timer-dock--minimized .phase-badge {
+  font-size: 0.52rem;
+  padding: 2px 5px;
+}
+
+.timer-dock--minimized.timer-dock--dragging,
+.timer-dock--minimized .timer-dock__handle {
+  cursor: pointer;
+  touch-action: auto;
+}
+
 .timer-dock__shell {
   width: 100%;
   box-sizing: border-box;
@@ -353,15 +548,61 @@ body {
 .timer-dock__handle {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 4px;
   height: 26px;
   flex-shrink: 0;
+  padding: 0 2px 0 4px;
   cursor: grab;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(0, 0, 0, 0.12) 100%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.timer-dock__handle-spacer {
+  width: 32px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.timer-dock__pin-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 22px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 250, 255, 0.95);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s, border-color 0.12s, transform 0.1s;
+}
+
+.timer-dock__pin-btn:hover {
+  background: rgba(0, 0, 0, 0.32);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.timer-dock__pin-btn:active {
+  transform: scale(0.97);
+}
+
+.timer-dock__pin-btn:focus {
+  outline: none;
+}
+
+.timer-dock__pin-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 213, 79, 0.55);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .timer-dock__handle:hover {
@@ -378,8 +619,11 @@ body {
 
 .timer-dock__grip {
   display: flex;
-  gap: 5px;
+  flex: 1 1 auto;
+  justify-content: center;
   align-items: center;
+  gap: 5px;
+  min-width: 0;
   pointer-events: none;
 }
 
@@ -447,7 +691,7 @@ body.is-timer-dragging {
 }
 
 .timer-side--float .btn--forbidden {
-  font-size: 0.65rem;
+  font-size: 0.4rem;
   padding: 6px 10px;
 }
 

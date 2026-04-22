@@ -138,30 +138,87 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  function initTimerDockDrag(dock) {
+  const STORAGE_DOCK_MIN = 'timerDockMin';
+  const STORAGE_DOCK_POS = 'timerDockPos';
+
+  function readSavedDockPos() {
+    try {
+      const raw = localStorage.getItem(STORAGE_DOCK_POS);
+      if (!raw) return null;
+      const { l, t } = JSON.parse(raw);
+      if (typeof l !== 'number' || typeof t !== 'number' || Number.isNaN(l) || Number.isNaN(t)) {
+        return null;
+      }
+      return { l, t };
+    } catch {
+      return null;
+    }
+  }
+
+  function applyDockPosStyles(dock, l, t) {
+    const margin = 8;
+    const w = dock.offsetWidth;
+    const h = dock.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    if (!w || !h) {
+      dock.style.left = `${Math.round(l)}px`;
+      dock.style.top = `${Math.round(t)}px`;
+      dock.style.right = 'auto';
+      dock.style.bottom = 'auto';
+      return;
+    }
+    const maxL = Math.max(margin, vw - w - margin);
+    const maxT = Math.max(margin, vh - h - margin);
+    const cl = Math.min(Math.max(margin, l), maxL);
+    const ct = Math.min(Math.max(margin, t), maxT);
+    dock.style.left = `${Math.round(cl)}px`;
+    dock.style.top = `${Math.round(ct)}px`;
+    dock.style.right = 'auto';
+    dock.style.bottom = 'auto';
+  }
+
+  function applyTimerDockMinimized(dock, on, opts = {}) {
+    if (!dock) return;
+    dock.classList.toggle('timer-dock--minimized', on);
+    const btn = document.getElementById('timerDockMinBtn');
+    if (btn) {
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btn.textContent = on ? '⟨' : '⟩';
+      btn.setAttribute('aria-label', on ? 'Expand timer' : 'Minimize timer to a side tab');
+      btn.setAttribute('title', on ? 'expand timer' : 'minimize to side tab');
+    }
+    if (on) {
+      dock.style.left = '';
+      dock.style.top = '';
+      dock.style.right = '';
+      dock.style.bottom = '';
+    } else {
+      const saved = readSavedDockPos();
+      if (saved) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => applyDockPosStyles(dock, saved.l, saved.t));
+        });
+      }
+    }
+    if (!opts.skipStorage) {
+      try {
+        localStorage.setItem(STORAGE_DOCK_MIN, on ? '1' : '0');
+      } catch {
+        /* noop */
+      }
+    }
+  }
+
+  function initTimerDockDrag(dock, options = {}) {
     const handle = document.getElementById('timerDockHandle');
     if (!handle) return;
 
-    const STORAGE_KEY = 'timerDockPos';
     const margin = 8;
-
-    function readSaved() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
-        const { l, t } = JSON.parse(raw);
-        if (typeof l !== 'number' || typeof t !== 'number' || Number.isNaN(l) || Number.isNaN(t)) {
-          return null;
-        }
-        return { l, t };
-      } catch {
-        return null;
-      }
-    }
 
     function savePos(l, t) {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ l: Math.round(l), t: Math.round(t) }));
+        localStorage.setItem(STORAGE_DOCK_POS, JSON.stringify({ l: Math.round(l), t: Math.round(t) }));
       } catch {
         /* private mode / quota */
       }
@@ -191,6 +248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function clampFromResize() {
+      if (dock.classList.contains('timer-dock--minimized')) return;
       if (dock.style.left === '') return;
       const l = parseFloat(dock.style.left);
       const t = parseFloat(dock.style.top);
@@ -198,11 +256,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       layoutDock(l, t);
     }
 
-    const saved = readSaved();
-    if (saved) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => layoutDock(saved.l, saved.t));
-      });
+    if (!options.skipRestore) {
+      const saved = readSavedDockPos();
+      if (saved) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => layoutDock(saved.l, saved.t));
+        });
+      }
     }
 
     window.addEventListener('resize', () => {
@@ -216,6 +276,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     handle.addEventListener('pointerdown', (e) => {
+      if (e.target.closest?.('.timer-dock__pin-btn')) return;
+      if (dock.classList.contains('timer-dock--minimized')) return;
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       const r = dock.getBoundingClientRect();
       drag = {
@@ -265,7 +327,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   setScreen('home');
 
-  if (timerDock) initTimerDockDrag(timerDock);
+  let startDockMin = false;
+  try {
+    startDockMin = localStorage.getItem(STORAGE_DOCK_MIN) === '1';
+  } catch {
+    startDockMin = false;
+  }
+
+  if (timerDock) {
+    initTimerDockDrag(timerDock, { skipRestore: startDockMin });
+    if (startDockMin) {
+      applyTimerDockMinimized(timerDock, true, { skipStorage: true });
+    }
+
+    const minBtn = document.getElementById('timerDockMinBtn');
+    const dockShell = document.getElementById('timerDockShell');
+    if (minBtn) {
+      minBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const next = !timerDock.classList.contains('timer-dock--minimized');
+        applyTimerDockMinimized(timerDock, next);
+      });
+    }
+    if (dockShell) {
+      dockShell.addEventListener('click', (e) => {
+        if (!timerDock.classList.contains('timer-dock--minimized')) return;
+        if (e.target.closest?.('.timer-dock__pin-btn')) return;
+        applyTimerDockMinimized(timerDock, false);
+      });
+    }
+  }
 
   /* ── wire Timer callbacks to Game ──────────── */
 

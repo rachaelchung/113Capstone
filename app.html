@@ -95,12 +95,15 @@
 
     <!-- floats above screens; hidden on home (timer paused there) -->
     <aside id="timerDock" class="timer-dock" aria-label="Pomodoro timer">
-      <div class="timer-dock__shell">
-        <div class="timer-dock__handle" id="timerDockHandle" role="button" tabindex="0"
-          aria-label="Drag to move timer" title="drag to move">
-          <span class="timer-dock__grip" aria-hidden="true">
+      <div class="timer-dock__shell" id="timerDockShell">
+        <div class="timer-dock__handle" id="timerDockHandle" role="group" aria-label="Timer title bar" tabindex="0"
+          data-drag-hint="Drag to move timer" title="drag the grip to move">
+          <span class="timer-dock__handle-spacer" aria-hidden="true"></span>
+          <span class="timer-dock__grip" aria-hidden="true" id="timerDockGrip" title="drag to move">
             <span></span><span></span><span></span>
           </span>
+          <button type="button" class="timer-dock__pin-btn" id="timerDockMinBtn"
+            aria-pressed="false" aria-label="Minimize timer to a side tab" title="minimize to side tab">⟩</button>
         </div>
         <div class="timer-dock__inner">
           <div class="timer-row timer-row--float">
