@@ -85,6 +85,13 @@ const ExtGame = (() => {
     _scheduleNextSpawn();
   }
 
+  /** Re-arm a spawn if the queue is empty; does not reset an existing schedule (avoids spam on repeated focus-guard messages). */
+  function ensureSpawning() {
+    if (forbidden) return;
+    if (spawnTimeout != null) return;
+    _scheduleNextSpawn();
+  }
+
   function stopSpawning() {
     _clearSpawnQueue();
     _removeAllCreatures();
@@ -106,7 +113,11 @@ const ExtGame = (() => {
     const habH = hab.offsetHeight || 72;
 
     const type = pickRandomCreatureType();
-    if (!type) return;
+    /* Catalog may still be loading after overlay init; without a reschedule the chain would stop forever. */
+    if (!type) {
+      spawnTimeout = setTimeout(_spawnCreature, 500);
+      return;
+    }
 
     const goRight = Math.random() > 0.5;
     const size = 36 + Math.floor(Math.random() * 22);
@@ -182,6 +193,7 @@ const ExtGame = (() => {
     setForbidden,
     isForbidden,
     startSpawning,
+    ensureSpawning,
     stopSpawning,
     showNotif,
     initEconomy,

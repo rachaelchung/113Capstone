@@ -52,6 +52,10 @@
         }
         wasRunningForBadUrl = false;
       }
+      /* setForbidden(true) clears the queue; re-arm if the timer is running in focus. */
+      if (Timer.isRunning() && Timer.isFocus()) {
+        ExtGame.ensureSpawning();
+      }
     }
   }
 
@@ -320,12 +324,18 @@
     }
   }
 
-  (async function init() {
+  /* Like the split `timer.html` path: wire the timer immediately. The lane there loaded
+   * creatures async; the unified shell used to `await` first and could delay the timer. */
+  (function init() {
     const dataUrl = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL
       ? chrome.runtime.getURL('data/creatures.json')
       : 'data/creatures.json';
-    await loadCreatureCatalog(dataUrl);
     wire();
     applyFocusGuard();
+    void loadCreatureCatalog(dataUrl).then(() => {
+      if (Timer.isRunning() && Timer.isFocus() && !ExtGame.isForbidden()) {
+        ExtGame.startSpawning();
+      }
+    });
   })();
 })();

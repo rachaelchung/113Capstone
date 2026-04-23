@@ -32,7 +32,23 @@
   box-sizing: border-box;
 }
 
-/* Full document is a click-through “hole” except elements we mark pointer-events: auto. */
+/* Pass-through: `pointer-events: none` on only html/body can break hit-testing to
+   children in extension iframes (Chromium). Disable the whole tree, then re-enable
+   the timer and lane creatures (ID beats `html *` in the cascade). */
+html,
+html * {
+  pointer-events: none !important;
+}
+
+#timerDock,
+#timerDock * {
+  pointer-events: auto !important;
+}
+
+#extCreatureLane .ext-creature {
+  pointer-events: auto !important;
+}
+
 /* forced-color-adjust helps sites (e.g. Google) that trigger forced/surfaces and odd white compositing */
 html {
   margin: 0;
@@ -42,8 +58,6 @@ html {
   overflow: hidden;
   background: transparent !important;
   background-color: rgba(0, 0, 0, 0) !important;
-  /* Pass-through: children with pointer-events:auto (timer) still get hits. */
-  pointer-events: none;
   color-scheme: light;
   forced-color-adjust: none;
   -webkit-tap-highlight-color: transparent;
@@ -64,21 +78,7 @@ body.ext-ov-body {
   overflow: hidden;
   background: transparent !important;
   background-color: rgba(0, 0, 0, 0) !important;
-  pointer-events: none;
   forced-color-adjust: none;
-}
-
-#timerDock,
-.ext-notif,
-.ext-reward-burst,
-.ext-forbidden-wrap {
-  pointer-events: auto !important;
-  touch-action: auto;
-}
-
-/* Lane is click-through except on creatures (matches index.html). */
-#extCreatureLane {
-  pointer-events: none;
 }
 
 /* Timer dock (mirrors app web styles) */
@@ -90,7 +90,6 @@ body.ext-ov-body {
   left: auto;
   width: min(520px, calc(100vw - 20px));
   box-sizing: border-box;
-  pointer-events: auto !important;
   isolation: isolate;
   -webkit-tap-highlight-color: transparent;
   transform: translateZ(0);
@@ -518,9 +517,11 @@ body.ext-ov-body.is-timer-dragging {
 }
 
 /* Bottom creature lane (index.html–style) */
+/* Same z-index as .timer-dock (3601) but after it in the DOM, so the strip paints
+   above a dock that was dragged to the bottom and would otherwise cover creatures. */
 .ext-creature-lane {
   position: fixed;
-  z-index: 2147483600;
+  z-index: 2147483601;
   left: 0;
   right: 0;
   bottom: 0;

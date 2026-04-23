@@ -81,6 +81,9 @@ function _normalizeCreatureRow(row) {
   return { ...row, spawnWeight };
 }
 
+/* Synchronous so spawns can run before fetch of data/creatures.json completes (or if it stalls). */
+CREATURE_TYPES = _FALLBACK_CREATURES.map(_normalizeCreatureRow);
+
 /** Big cartoon eyes (landing hero style). */
 function _eyesLand(ink, eyeWhite, pupil, cx, cy, gap, eyeR, pupilR) {
   const lx = cx - gap / 2;
