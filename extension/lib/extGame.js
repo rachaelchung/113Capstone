@@ -4,6 +4,8 @@
  */
 
 const ExtGame = (() => {
+  const IS_LANE = typeof window !== 'undefined' && window.name === 'henn-lane';
+
   let food = 0;
   let coins = 0;
   let caught = 0;
@@ -39,6 +41,17 @@ const ExtGame = (() => {
   }
 
   function _burstPointForCatch() {
+    if (IS_LANE && window._hennBurstFromTimer) {
+      const p = window._hennBurstFromTimer;
+      if (typeof p.x === 'number' && typeof p.y === 'number') {
+        const w = window.innerWidth || 400;
+        const h = window.innerHeight || 72;
+        return {
+          x: Math.min(Math.max(p.x, 8), w - 8),
+          y: Math.min(Math.max(p.y, 8), h - 8),
+        };
+      }
+    }
     const el = document.getElementById('timerDock');
     if (el) {
       const r = el.getBoundingClientRect();
@@ -69,6 +82,15 @@ const ExtGame = (() => {
     const bar = document.getElementById('extForbiddenBar');
     if (bar) {
       bar.hidden = !forbidden;
+    } else if (IS_LANE && parent !== window) {
+      try {
+        parent.postMessage(
+          { source: 'henn-lane', type: 'henn-timer-forbidden-ui', hidden: !forbidden },
+          '*'
+        );
+      } catch {
+        /* no-op */
+      }
     }
     if (forbidden) {
       _clearSpawnQueue();
@@ -105,10 +127,17 @@ const ExtGame = (() => {
   }
 
   function _spawnCreature() {
+    /* The setTimeout that invoked this has fired; keep the handle cleared so
+     * ensureSpawning() can re-arm after early returns (e.g. forbidden / missing DOM). */
+    spawnTimeout = null;
+
     if (forbidden) return;
 
     const hab = document.getElementById('extCreatureLane');
-    if (!hab) return;
+    if (!hab) {
+      spawnTimeout = setTimeout(_spawnCreature, 200);
+      return;
+    }
     const habW = hab.offsetWidth || window.innerWidth;
     const habH = hab.offsetHeight || 72;
 
@@ -166,6 +195,17 @@ const ExtGame = (() => {
   }
 
   function showNotif(message) {
+    if (IS_LANE && parent !== window) {
+      try {
+        parent.postMessage(
+          { source: 'henn-lane', type: 'henn-timer-notif', message: String(message) },
+          '*'
+        );
+      } catch {
+        /* no-op */
+      }
+      return;
+    }
     const n = document.getElementById('extNotif');
     if (!n) return;
     n.textContent = message;

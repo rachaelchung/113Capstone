@@ -23,8 +23,12 @@
         "timer.html",
         "lane.html",
         "overlay.html",
+        "overlay-timer.html",
+        "overlay-lane.html",
         "overlay.css",
         "overlay.js",
+        "overlay-timer.js",
+        "overlay-lane.js",
         "css/*",
         "lib/*",
         "data/*"

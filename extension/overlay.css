@@ -1,4 +1,5 @@
-/* Extension overlay: transparent pass-through; interactive regions use pointer-events. */
+/* Extension overlay: pass-through via pointer-events (unified overlay.html) or two iframes
+   (overlay-timer + overlay-lane) so the host page receives clicks outside the timer/lane. */
 
 :root {
   --cartoon-ink: #1a1208;
@@ -97,6 +98,41 @@ body.ext-ov-body {
   transition: opacity 0.25s ease, visibility 0.25s;
 }
 
+/*
+ * Timer-only iframe: never 100vw (see block above re: nested iframes). Do not use 100%
+ * here either — the host iframe is sized to this panel; 100% makes the dock = iframe
+ * width, which can stretch the panel and report the wrong w/h. Let the dock size to
+ * its content, pinned to the inner right (matches default top-right on the real page
+ * when the parent iframe is flush right).
+ */
+html.ext-ov-timer .timer-dock:not(.timer-dock--minimized) {
+  width: auto !important;
+  max-width: 520px !important;
+  min-width: 240px;
+  right: 0;
+  top: calc(12px + env(safe-area-inset-top, 0));
+  left: auto;
+  box-sizing: border-box;
+}
+
+html.ext-ov-timer .timer-dock__handle {
+  cursor: default;
+  touch-action: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html.ext-ov-timer .timer-dock__handle-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  color: rgba(255, 250, 255, 0.5);
+  padding: 0 0 0 2px;
+}
+
 .timer-dock--dragging {
   transition: none !important;
 }
@@ -109,9 +145,9 @@ body.ext-ov-body {
   top: 50% !important;
   left: auto !important;
   right: max(0px, env(safe-area-inset-right, 0)) !important;
-  width: 58px !important;
-  min-width: 58px;
-  max-width: 58px;
+  width: 64px !important;
+  min-width: 64px;
+  max-width: 64px;
   transform: translateY(-50%) !important;
   transition: width 0.2s ease, transform 0.2s ease, right 0.2s ease;
 }
@@ -141,8 +177,11 @@ body.ext-ov-body {
 }
 
 .timer-dock--minimized .timer-dock__inner {
-  padding: 8px 4px 10px;
+  padding: 10px 8px 14px;
   border-radius: 0 0 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .timer-dock--minimized .ext-forbidden-wrap {
@@ -158,8 +197,8 @@ body.ext-ov-body {
 }
 
 .timer-dock--minimized .timer-ring-wrap--float {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
 }
 
 .timer-dock--minimized .timer-dock__inner .timer-svg {
@@ -192,6 +231,26 @@ body.ext-ov-body {
   overflow: hidden;
   background: linear-gradient(165deg, #4a4558 0%, #2f2c3a 45%, #25232e 100%);
   box-shadow: var(--card-shadow-lg);
+}
+
+html.ext-ov-timer .timer-dock:not(.timer-dock--minimized) {
+  width: auto !important;
+  max-width: 520px !important;
+  min-width: 360px;        /* ← was 240px, bumped up */
+  right: 0;
+  top: calc(12px + env(safe-area-inset-top, 0));
+  left: auto;
+  box-sizing: border-box;
+}
+
+html.ext-ov-timer .timer-row--float {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+html.ext-ov-timer .timer-side--float {
+  min-width: 180px;
+  flex-shrink: 0;
 }
 
 .timer-dock__handle {
