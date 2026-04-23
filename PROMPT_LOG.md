@@ -261,3 +261,67 @@ me:
 ok. can we try to move everything to be stored in the database? I want users to be able to log in across devices for this
 
 *databases created once again*
+
+--
+
+## Cursor Chat: Chrome extension
+*This part of the project was a lot of debugging, I will show you the main prompts*
+
+me:
+My next step is to create a chrome extension (as outlined in SPEC.md) do I need to deploy my app first or no?
+
+me:
+great. then let's start working on adapting to a chrome extension. describe the files you create and what they do and how I can test them. To be clear about the extension, I want it to be the same timer that is already floating on my app and creatures that run across the bottom of the screen (see index.html for what I am picturing). As for the forbidden site detector, it no longer needs to display on the app.html screen, it should just clearly display on the timer, pause it, and make sure no more creatures come across the screen.
+
+*after this I fix some things with cursor + make manual changes to html and css, etc. I have lots of problems with the iframes*
+
+me:
+right now with the chrome extension, I can't seem to interact witht hings on the page. how do I fix this
+
+*more things break, more conversation*
+
+me:
+can you undo everything you did in this conversation? none of this is working properly and it worked before this
+
+--
+
+## Cursor Chat: Chrome extension -- continued debugging
+
+me:
+I like exactly the way the chrome extension works right now... except for the fact that I cannot interact with anything on the page. can I fix this? by writing it so that I can click "through the frame" when I click anywhere except where the timer currently is and where the creature currentyl is
+
+*after debugging that I think isn't going aynwhere, I decide the timer can no longer be a modal that moves freely but is instead fixed to the page*
+
+me:
+ok. remove the idea that it is a draggable modal. just leave it in one place where the timer can be minimized or unminimized in the top right corner.
+
+--
+
+## Cursor Chat: Chrome extension integration
+
+me:
+ok. what is the estimation on the difficulty of extending chrome extension to work with the rest of the app. In short, I want all creatures to be able to be stored in a user's info database, and updated. If i deploy my backend somewhere, how difficult is this to integrate?
+
+me:
+what do you suggest to get the user's JWT into the extension. I need the fasted option, even if it's not the cleanest. I'm tempted to just have the user log in again with the extension.
+
+me:
+ok. lets begin to implement this. I will continue to test with a local running backend. please give me all the instructions I need to run and test this properly.
+
+me:
+do you also see how everytime you reenter your habitat when you get a new creature you get the chance to name it? is this handled for this way or no? if not, can it be handled
+
+me:
+ok yes implement this
+
+*I do a little more trivial debugging and move on*
+--
+
+## Cursor Chat: Backend Deployment
+
+me:
+I think i am ready to deplot my backend to render. I want running the app locally to take priority however. can you make the changes so that it checks if a local server is running first, and if not, looks for the backend? for reference I plan to deploy the front-end to github pages, and the backend to render... and then I want to remove having to use the "base API url" in my extension login. is this all feasible?
+*this was in the plan function, so then I build*
+
+
+*from here, I do some frontend final design skills. I really enjoyed Claude's style direction in index.html, so I match everything else to it.*

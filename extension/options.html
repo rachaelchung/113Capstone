@@ -4,94 +4,232 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>head empty — account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --beige:      #fdf6ec;
+      --beige-dark: #f5e9d3;
+      --beige-edge: #d4c4b0;
+      --ink:        #1a1208;
+      --ink-light:  #5a4a2e;
+      --red:        #e8392a;
+      --blue:       #1e6fd9;
+      --yellow:     #f5c518;
+      --green:      #3bbf6e;
+      --card-shadow:    4px 4px 0px var(--ink);
+      --card-shadow-lg: 6px 6px 0px var(--ink);
+    }
+
+    html { scroll-behavior: smooth; }
+
     body {
-      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      padding: 1.25rem 1.5rem 2rem;
-      max-width: 28rem;
-      color: #1a1520;
-      background: #f4f0f8;
+      font-family: 'Nunito', sans-serif;
+      background: var(--beige);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 0;
     }
-    h1 { font-size: 1.1rem; font-weight: 700; margin: 0 0 0.25rem; }
-    p.muted { color: #5c5566; font-size: 0.9rem; margin: 0 0 1rem; }
-    label { display: block; font-size: 0.8rem; font-weight: 600; margin: 0.75rem 0 0.25rem; }
-    input {
+
+    /* dot texture */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(circle, var(--yellow) 2px, transparent 2px),
+        radial-gradient(circle, var(--blue) 1.5px, transparent 1.5px),
+        radial-gradient(circle, var(--red) 1px, transparent 1px);
+      background-size: 80px 80px, 120px 120px, 60px 60px;
+      background-position: 10px 10px, 45px 55px, 25px 70px;
+      opacity: 0.08;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── page header ── */
+    .page-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 18px 28px 14px;
+      border-bottom: 3px solid var(--ink);
+      background: var(--beige);
+      position: relative; z-index: 1;
+    }
+    .brand-logo { width: 30px; height: 30px; flex-shrink: 0; }
+    .brand-name {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.2rem; text-transform: lowercase; color: var(--ink);
+    }
+    .brand-name span { color: var(--red); }
+    .page-header-sub {
+      margin-left: auto;
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.85rem; color: var(--ink-light); text-transform: lowercase;
+    }
+
+    /* ── main content ── */
+    .main {
+      position: relative; z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+    }
+
+    /* ── section card ── */
+    .card {
+      background: var(--beige-dark);
+      border: 3px solid var(--ink);
+      border-radius: 20px;
+      padding: 22px 22px 20px;
+      box-shadow: var(--card-shadow-lg);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.1rem; text-transform: lowercase;
+      color: var(--ink); margin-bottom: 6px;
+    }
+
+    /* ── callout ── */
+    .callout {
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--ink-light); line-height: 1.55;
+      background: var(--beige);
+      border: 2.5px solid var(--ink);
+      border-radius: 14px; padding: 12px 14px;
+      margin-bottom: 18px;
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+    .callout strong { display: block; margin-bottom: 5px; color: var(--ink); font-weight: 800; }
+    .callout code {
+      font-family: 'Courier New', monospace; font-size: 0.8em;
+      background: var(--beige-dark); padding: 1px 5px; border-radius: 5px;
+      border: 1.5px solid var(--beige-edge); color: var(--ink);
+    }
+
+    /* ── form ── */
+    label {
+      display: block; font-size: 0.75rem; font-weight: 800;
+      letter-spacing: 0.04em; text-transform: lowercase;
+      color: var(--ink-light); margin: 14px 0 5px;
+    }
+    label:first-of-type { margin-top: 0; }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="url"] {
       width: 100%;
-      padding: 0.5rem 0.6rem;
-      border: 1px solid #c9c2d4;
-      border-radius: 8px;
-      font: inherit;
+      padding: 11px 14px;
+      font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 700;
+      border: 2.5px solid var(--ink); border-radius: 12px;
+      background: var(--beige); color: var(--ink); outline: none;
+      transition: box-shadow 0.15s, border-color 0.15s;
     }
-    input:focus { outline: 2px solid #7b6fd6; border-color: #7b6fd6; }
-    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-    button {
-      font: inherit;
-      font-weight: 600;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
+    input::placeholder { color: var(--beige-edge); }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(30,111,217,0.15); }
+
+    /* ── advanced details ── */
+    details.advanced {
+      margin-bottom: 14px;
+      background: var(--beige);
+      border: 2px dashed var(--ink);
+      border-radius: 12px; padding: 10px 14px;
     }
-    button.primary { background: #4a3f8c; color: #fff; }
-    button.primary:hover { background: #3d3580; }
-    button.ghost { background: #e8e2f0; color: #2a2038; }
-    button.ghost:hover { background: #ddd5ea; }
+    details.advanced summary {
+      cursor: pointer; font-size: 0.78rem; font-weight: 800;
+      text-transform: lowercase; letter-spacing: 0.03em; color: var(--ink-light);
+      list-style: none; display: flex; align-items: center; gap: 6px;
+    }
+    details.advanced summary::before {
+      content: '▶'; font-size: 0.6rem; transition: transform 0.15s;
+    }
+    details[open].advanced summary::before { transform: rotate(90deg); }
+    details.advanced label { margin-top: 10px; }
+
+    /* ── buttons ── */
+    .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 11px 20px;
+      font-family: 'Fredoka One', cursive; font-size: 0.95rem;
+      border-radius: 12px; border: 2.5px solid var(--ink);
+      cursor: pointer; text-transform: lowercase;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .btn:hover  { transform: translate(-2px,-2px); box-shadow: var(--card-shadow-lg); }
+    .btn:active { transform: translate(2px,2px);   box-shadow: 1px 1px 0 var(--ink); }
+
+    .btn-primary { background: var(--red);    color: #fff; }
+    .btn-ghost   { background: var(--beige-dark); color: var(--ink); }
+    .btn-yellow  { background: var(--yellow); color: var(--ink); }
+
+    /* ── status ── */
     .status {
-      margin-top: 1rem;
-      padding: 0.65rem 0.75rem;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      min-height: 1.2em;
-      white-space: pre-wrap;
+      margin-top: 14px; padding: 11px 14px;
+      border-radius: 12px; border: 2.5px solid var(--ink);
+      font-size: 0.86rem; font-weight: 700; line-height: 1.5;
+      box-shadow: 3px 3px 0 var(--ink); white-space: pre-wrap;
     }
     .status:empty { display: none; }
-    .status--ok { background: #e2f4e8; color: #14532d; }
-    .status--error { background: #fde8e8; color: #7f1d1d; }
-    .callout {
-      font-size: 0.9rem;
-      color: #3a3248;
-      background: #ece6f5;
-      border: 1px solid #c9bddc;
-      border-radius: 8px;
-      padding: 0.75rem 0.85rem;
-      margin-bottom: 1rem;
-    }
-    .callout strong { display: block; margin-bottom: 0.35rem; }
-    details.advanced { margin-top: 0.75rem; font-size: 0.88rem; color: #4a4258; }
-    details.advanced summary { cursor: pointer; font-weight: 600; margin-bottom: 0.35rem; }
+    .status--ok    { background: #dcfce7; color: var(--ink); }
+    .status--error { background: #fde8e8; color: var(--ink); }
   </style>
 </head>
 <body>
-  <h1>head empty — sign in</h1>
-  <p class="muted">Connects the extension to your backend (same account as the web app). The API URL is chosen automatically: local Flask first when it responds, otherwise the production URL set in <code>extension/background.js</code> (same as <code>js/apiBaseConfig.js</code>).</p>
 
-  <div class="callout">
-    <strong>Google (and “continue in browser”)</strong>
-    After you sign in on your site, open <code>app.html</code> (or the page that saves your session) in this same browser. The extension copies your session and API base from the page automatically. Refresh the app tab once if needed, then use “Verify session” below. Deployed site: your exact origin (e.g. <code>https://your.app/*</code>) must be listed in the extension <code>manifest.json</code> under <code>content_scripts</code> next to the localhost entries, then reload the extension.
-  </div>
+  <!-- page header -->
+  <header class="page-header">
+    <svg class="brand-logo" viewBox="0 0 30 30">
+      <circle cx="15" cy="15" r="13.5" fill="#f5c518" stroke="#1a1208" stroke-width="2.5"/>
+      <circle cx="11"  cy="13" r="1.9" fill="#1a1208"/>
+      <circle cx="19"  cy="13" r="1.9" fill="#1a1208"/>
+      <path d="M11 19 Q15 23 19 19" stroke="#1a1208" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    </svg>
+    <span class="brand-name">head <span>empty</span>.</span>
+    <span class="page-header-sub">account settings</span>
+  </header>
 
-  <form id="loginForm" autocomplete="on">
-    <details class="advanced" id="apiAdvanced">
-      <summary>Advanced: override API base URL</summary>
-      <label for="apiBase">Only if auto-detection is wrong (no trailing slash)</label>
-      <input type="url" id="apiBase" name="apiBase" placeholder="Leave blank for automatic" spellcheck="false" />
-    </details>
+  <main class="main">
 
-    <label for="ident">Email or username</label>
-    <input type="text" id="ident" name="ident" autocomplete="username" required />
-
-    <label for="password">Password (email / username accounts; skip if you only use Google + browser tab)</label>
-    <input type="password" id="password" name="password" autocomplete="current-password" />
-
-    <div class="row">
-      <button type="submit" class="primary" id="loginBtn">Sign in</button>
-      <button type="button" class="ghost" id="verifyBtn" title="GET /api/auth/me with saved token">Verify session</button>
-      <button type="button" class="ghost" id="logoutBtn">Log out</button>
+    <!-- google callout -->
+    <div class="callout">
+      <strong>🔑 using google / "continue in browser"?</strong>
+      after signing in on your site, open <code>app.html</code> in this same browser. the extension copies your session automatically. refresh the app tab once if needed, then hit <strong>verify session</strong> below. make sure your origin (e.g. <code>https://your.app/*</code>) is listed in <code>manifest.json</code> under <code>content_scripts</code>.
     </div>
-  </form>
-  <div id="status" class="status" role="status" aria-live="polite"></div>
+
+    <!-- sign-in card -->
+    <div class="card">
+      <div class="card-title">sign in ✨</div>
+
+      <form id="loginForm" autocomplete="on">
+        <details class="advanced" id="apiAdvanced">
+          <summary>advanced: override api base url</summary>
+          <label for="apiBase">custom url (no trailing slash) — leave blank for auto-detect</label>
+          <input type="url" id="apiBase" name="apiBase"
+            placeholder="https://your-api.com" spellcheck="false" />
+        </details>
+
+        <label for="ident">email or username</label>
+        <input type="text" id="ident" name="ident"
+          autocomplete="username" placeholder="you@school.edu" required />
+
+        <label for="password">password <span style="font-weight:600;opacity:.7">(skip if you use google + browser tab)</span></label>
+        <input type="password" id="password" name="password"
+          autocomplete="current-password" placeholder="••••••••" />
+
+        <div class="btn-row">
+          <button type="submit" class="btn btn-primary" id="loginBtn">sign in →</button>
+          <button type="button" class="btn btn-yellow" id="verifyBtn">verify session</button>
+          <button type="button" class="btn btn-ghost"  id="logoutBtn">log out</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+
+  </main>
 
   <script src="options.js"></script>
 </body>
