@@ -18,7 +18,14 @@ npx serve .
 .venv/bin/flask --app wsgi:app run --host 127.0.0.1 --port 8001
 ```
 
-Then open [http://localhost:8080](http://localhost:8080) (or VS Code Live Server on port 5500). Point the `api-base` meta on `index.html` and the `tracker-api-base` meta on `app.html` at your Flask URL (see `backend/.env.example` for auth + CORS).
+Then open [http://localhost:8080](http://localhost:8080) (or VS Code Live Server on port 5500). When the site is served over **http** from localhost, the app **probes** `http://127.0.0.1:8001/health` (and `:8001` on `localhost`) and uses your local Flask if it responds; otherwise it uses the URL in [`js/apiBaseConfig.js`](js/apiBaseConfig.js) (`window.HENN_REMOTE_API_BASE`). Set that variable to your **production API** (for example Render) before deploying the static site to GitHub Pages. HTTPS pages (such as `https://*.github.io`) cannot call `http://localhost`, so they always use the production URL from that file.
+
+### GitHub Pages + Render + extension
+
+1. Deploy the API to Render (or similar) and set `CORS_ORIGINS` and `FRONTEND_ORIGIN` in the backend env to your GitHub Pages origin (see [`backend/.env.example`](backend/.env.example)).
+2. In Google Cloud Console, set the OAuth redirect URI to `{your Render API URL}/api/auth/google/callback`.
+3. Set the same production API URL (no trailing slash) in **`js/apiBaseConfig.js`** and **`extension/background.js`** (`HENN_REMOTE_API_BASE`).
+4. Reload the unpacked extension after editing the manifest if you use a **custom domain** (add your origin next to `https://*.github.io/*` under `content_scripts` → `content-app-auth.js`).
 
 ---
 
