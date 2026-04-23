@@ -30,7 +30,7 @@ const AUTH_API_BASE_KEY = 'henn_extension_api_base';
 const AUTH_JWT_KEY = 'henn_tracker_jwt';
 
 /** Production API URL (no trailing slash). Keep in sync with js/apiBaseConfig.js */
-const HENN_REMOTE_API_BASE = '';
+const HENN_REMOTE_API_BASE = 'https://one13capstone.onrender.com';
 
 const LOCAL_API_CANDIDATES = ['http://127.0.0.1:8001', 'http://localhost:8001'];
 
