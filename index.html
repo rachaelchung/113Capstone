@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>head empty. no thoughts.</title>
-  <!-- Same host as Live Server / static hosting; must match a CORS origin on the API -->
-  <meta name="api-base" content="http://127.0.0.1:8001" />
+  <!-- Optional override; set HENN_REMOTE_API_BASE in js/apiBaseConfig.js for GitHub Pages + Render -->
+  <meta name="api-base" content="" />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -727,11 +727,16 @@
   </div>
 </div>
 
+<script src="js/apiBaseConfig.js"></script>
+<script src="js/apiResolve.js"></script>
 <script>
   const TRACKER_JWT_KEY = 'henn_tracker_jwt';
   const TRACKER_USER_ID_KEY = 'henn_tracker_user_id';
 
-  function getApiBase() {
+  async function getApiBase() {
+    if (typeof window.HennApiResolve !== 'undefined') {
+      return window.HennApiResolve.resolve();
+    }
     const m = document.querySelector('meta[name="api-base"]');
     const v = (m && m.getAttribute('content')) || '';
     return String(v).trim().replace(/\/$/, '');
@@ -752,10 +757,10 @@
     } catch (e) { /* ignore */ }
   }
 
-  function startGoogle() {
-    const base = getApiBase();
+  async function startGoogle() {
+    const base = await getApiBase();
     if (!base) {
-      showAuthFlash('Set the api-base meta tag in this page to your Flask server URL (see README).', false);
+      showAuthFlash('Set window.HENN_REMOTE_API_BASE in js/apiBaseConfig.js to your deployed API URL (see README).', false);
       document.getElementById('auth').scrollIntoView({ behavior: 'smooth' });
       return;
     }
@@ -807,9 +812,9 @@
   }
 
   async function handleAuth(btn, type) {
-    const base = getApiBase();
+    const base = await getApiBase();
     if (!base) {
-      showAuthFlash('Set the api-base meta tag to your Flask server URL.', false);
+      showAuthFlash('Set window.HENN_REMOTE_API_BASE in js/apiBaseConfig.js to your deployed API URL.', false);
       return;
     }
     const orig = btn.textContent;

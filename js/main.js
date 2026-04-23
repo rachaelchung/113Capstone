@@ -5,6 +5,10 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  if (typeof TrackerApi !== 'undefined' && TrackerApi.ensureResolved) {
+    await TrackerApi.ensureResolved();
+  }
+
   await loadCreatureCatalog();
   await loadDecorationCatalog();
   await loadBackgroundsCatalog();

@@ -8,6 +8,13 @@
   const SOURCE = 'henn-content-sync';
 
   function readApiBase() {
+    try {
+      if (typeof window.HENN_REMOTE_API_BASE === 'string' && window.HENN_REMOTE_API_BASE.trim()) {
+        return window.HENN_REMOTE_API_BASE.trim().replace(/\/$/, '');
+      }
+    } catch {
+      /* no-op */
+    }
     const t = document.querySelector('meta[name="tracker-api-base"]');
     const a = document.querySelector('meta[name="api-base"]');
     const tC = t && t.getAttribute('content') && t.getAttribute('content').trim();

@@ -29,6 +29,11 @@ const STORAGE_KEY = 'henn_forbidden_hosts';
 const AUTH_API_BASE_KEY = 'henn_extension_api_base';
 const AUTH_JWT_KEY = 'henn_tracker_jwt';
 
+/** Production API URL (no trailing slash). Keep in sync with js/apiBaseConfig.js */
+const HENN_REMOTE_API_BASE = '';
+
+const LOCAL_API_CANDIDATES = ['http://127.0.0.1:8001', 'http://localhost:8001'];
+
 function normalizeApiBase(s) {
   return String(s || '')
     .trim()
@@ -55,6 +60,56 @@ async function parseJsonResponse(res) {
     throw new Error(msg);
   }
   return data;
+}
+
+function tabHostIsLocal(url) {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    const h = String(u.hostname || '').toLowerCase();
+    return h === 'localhost' || h === '127.0.0.1' || h === '[::1]';
+  } catch {
+    return false;
+  }
+}
+
+async function probeHealthExtension(base) {
+  const b = normalizeApiBase(base);
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), 650);
+  try {
+    const res = await fetch(b + '/health', { signal: ctrl.signal, cache: 'no-store' });
+    return res.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(tid);
+  }
+}
+
+async function probeFirstLocalBase() {
+  for (const u of LOCAL_API_CANDIDATES) {
+    if (await probeHealthExtension(u)) return normalizeApiBase(u);
+  }
+  return '';
+}
+
+/**
+ * @param {'login' | 'sync'} mode
+ * @param {string} [tabUrl] sender.tab.url for sync
+ */
+async function resolveApiBaseForExtension(mode, tabUrl) {
+  const remote = normalizeApiBase(HENN_REMOTE_API_BASE);
+  if (mode === 'login') {
+    const local = await probeFirstLocalBase();
+    if (local) return local;
+    return remote;
+  }
+  if (tabHostIsLocal(tabUrl)) {
+    const local = await probeFirstLocalBase();
+    if (local) return local;
+  }
+  return remote;
 }
 
 /** A bare TLD or single label (e.g. "com") would otherwise match every *.com host via endsWith('.com'). */
@@ -176,11 +231,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg && msg.type === 'henn-auth-login') {
     (async () => {
-      const base = normalizeApiBase(msg.apiBase);
+      let base = normalizeApiBase(msg.apiBase);
       const ident = String(msg.emailOrUsername || '').trim();
       const password = String(msg.password || '');
       if (!base) {
-        sendResponse({ ok: false, error: 'API base URL is required' });
+        base = await resolveApiBaseForExtension('login', null);
+      }
+      if (!base) {
+        sendResponse({
+          ok: false,
+          error:
+            'No API URL resolved. Set HENN_REMOTE_API_BASE in extension/background.js (same value as js/apiBaseConfig.js).',
+        });
         return;
       }
       if (!ident || !password) {
@@ -271,18 +333,29 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       sendResponse({ ok: false, error: 'invalid token' });
       return true;
     }
-    const apiBase = msg.apiBase && normalizeApiBase(msg.apiBase);
-    const toSet = { [AUTH_JWT_KEY]: raw };
-    if (apiBase) {
-      toSet[AUTH_API_BASE_KEY] = apiBase;
-    }
-    chrome.storage.local.set(toSet, () => {
-      if (chrome.runtime.lastError) {
-        sendResponse({ ok: false, error: chrome.runtime.lastError.message });
+    (async () => {
+      let apiBase = msg.apiBase && normalizeApiBase(msg.apiBase);
+      if (!apiBase) {
+        const tabUrl = sender.tab && sender.tab.url ? sender.tab.url : '';
+        apiBase = await resolveApiBaseForExtension('sync', tabUrl);
+      }
+      if (!apiBase) {
+        sendResponse({
+          ok: false,
+          error:
+            'No API URL resolved. Set HENN_REMOTE_API_BASE in extension/background.js (same value as js/apiBaseConfig.js).',
+        });
         return;
       }
-      sendResponse({ ok: true });
-    });
+      const toSet = { [AUTH_JWT_KEY]: raw, [AUTH_API_BASE_KEY]: apiBase };
+      chrome.storage.local.set(toSet, () => {
+        if (chrome.runtime.lastError) {
+          sendResponse({ ok: false, error: chrome.runtime.lastError.message });
+          return;
+        }
+        sendResponse({ ok: true });
+      });
+    })();
     return true;
   }
   if (msg && msg.type === 'henn-pending-catch') {

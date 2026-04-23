@@ -121,8 +121,8 @@ const ExtGame = (() => {
 
   function _scheduleNextSpawn() {
     _clearSpawnQueue();
-    /* First spawns were easy to miss at 8–20s; keep variety but start sooner. */
-    const delay = 500 + Math.random() * 1000;
+    /* 8–20s */
+    const delay = 8000 + Math.random() * 12000;
     spawnTimeout = setTimeout(_spawnCreature, delay);
   }
 
@@ -164,10 +164,17 @@ const ExtGame = (() => {
 
     hab.appendChild(el);
     const duration = 10000 + Math.random() * 8000;
+    /* Force a layout pass so the browser records the starting `left` before
+     * we set the transition + final value. Without this, Chrome coalesces
+     * both writes into a single style resolution on freshly-appended nodes
+     * and skips the transition entirely — the creature silently jumps from
+     * off-screen-left to off-screen-right and gets removed unseen. The
+     * reason "leaving and coming back" appears to fix it is that the wake
+     * from a hidden tab forces a style recalc before pending rAFs fire, so
+     * a starting value happens to exist by the time `left` changes. */
+    void el.offsetWidth;
     el.style.transition = `left ${duration}ms linear`;
-    requestAnimationFrame(() => {
-      el.style.left = `${endX}px`;
-    });
+    el.style.left = `${endX}px`;
     setTimeout(() => {
       if (el.parentNode) el.parentNode.removeChild(el);
     }, duration + 300);

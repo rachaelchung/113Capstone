@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#2a2630" />
-  <!-- Backend: /api/parse-syllabus, /api/weekly-suggestions (no trailing slash) -->
-  <meta name="tracker-api-base" content="http://127.0.0.1:8001" />
+  <!-- Optional override; production default is js/apiBaseConfig.js (HENN_REMOTE_API_BASE). Local dev: probed automatically on http localhost. -->
+  <meta name="tracker-api-base" content="" />
   <title>head empty. no thoughts.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -294,6 +294,8 @@
   <script src="js/store.js"></script>
   <script src="js/focusBg.js"></script>
   <script src="js/trackerStore.js"></script>
+  <script src="js/apiBaseConfig.js"></script>
+  <script src="js/apiResolve.js"></script>
   <script src="js/trackerApi.js"></script>
   <script src="js/userAppState.js"></script>
   <script src="js/trackerMain.js"></script>

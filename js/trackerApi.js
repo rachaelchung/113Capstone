@@ -2,7 +2,9 @@
  * trackerApi.js — syllabus + weekly suggestions via deployed backend (OpenAI on server).
  */
 
-function getTrackerApiBase() {
+let _trackerApiBaseCached = '';
+
+function readLegacyTrackerBase() {
   const meta = document.querySelector('meta[name="tracker-api-base"]');
   const fromMeta = meta?.getAttribute('content')?.trim();
   if (fromMeta) return fromMeta.replace(/\/$/, '');
@@ -10,6 +12,28 @@ function getTrackerApiBase() {
     return window.TRACKER_API_BASE.trim().replace(/\/$/, '');
   }
   return '';
+}
+
+function getTrackerApiBase() {
+  if (_trackerApiBaseCached) return _trackerApiBaseCached;
+  if (typeof window.HennApiResolve !== 'undefined') {
+    const r = window.HennApiResolve.getRemoteBase();
+    if (r) return r;
+  }
+  return readLegacyTrackerBase();
+}
+
+/**
+ * Call once at app startup (after apiResolve.js loads). Resolves local-first on http localhost.
+ * @returns {Promise<string>}
+ */
+async function ensureResolvedTrackerBase() {
+  if (typeof window.HennApiResolve !== 'undefined') {
+    _trackerApiBaseCached = await window.HennApiResolve.resolve();
+    return _trackerApiBaseCached;
+  }
+  _trackerApiBaseCached = readLegacyTrackerBase();
+  return _trackerApiBaseCached;
 }
 
 function getStoredTrackerJwt() {
@@ -23,12 +47,13 @@ function getStoredTrackerJwt() {
 
 const TrackerApi = {
   getBaseUrl: getTrackerApiBase,
+  ensureResolved: ensureResolvedTrackerBase,
 
   requireBase() {
     const b = getTrackerApiBase();
     if (!b) {
       throw new Error(
-        'Configure your API URL: set the tracker-api-base meta tag in app.html (or window.TRACKER_API_BASE) to your deployed backend.',
+        'Configure your API URL: set window.HENN_REMOTE_API_BASE in js/apiBaseConfig.js (and deploy the backend), or add a tracker-api-base meta tag.',
       );
     }
     return b;

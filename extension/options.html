@@ -59,11 +59,13 @@
       margin-bottom: 1rem;
     }
     .callout strong { display: block; margin-bottom: 0.35rem; }
+    details.advanced { margin-top: 0.75rem; font-size: 0.88rem; color: #4a4258; }
+    details.advanced summary { cursor: pointer; font-weight: 600; margin-bottom: 0.35rem; }
   </style>
 </head>
 <body>
   <h1>head empty — sign in</h1>
-  <p class="muted">Connects the extension to your backend (same account as the web app). Local dev: run Flask, then set API base to match.</p>
+  <p class="muted">Connects the extension to your backend (same account as the web app). The API URL is chosen automatically: local Flask first when it responds, otherwise the production URL set in <code>extension/background.js</code> (same as <code>js/apiBaseConfig.js</code>).</p>
 
   <div class="callout">
     <strong>Google (and “continue in browser”)</strong>
@@ -71,8 +73,11 @@
   </div>
 
   <form id="loginForm" autocomplete="on">
-    <label for="apiBase">API base URL (no trailing slash)</label>
-    <input type="url" id="apiBase" name="apiBase" placeholder="http://127.0.0.1:8001" spellcheck="false" required />
+    <details class="advanced" id="apiAdvanced">
+      <summary>Advanced: override API base URL</summary>
+      <label for="apiBase">Only if auto-detection is wrong (no trailing slash)</label>
+      <input type="url" id="apiBase" name="apiBase" placeholder="Leave blank for automatic" spellcheck="false" />
+    </details>
 
     <label for="ident">Email or username</label>
     <input type="text" id="ident" name="ident" autocomplete="username" required />

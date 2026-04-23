@@ -14,8 +14,9 @@ function loadState() {
     }
     if (res && res.apiBase) {
       $('apiBase').value = res.apiBase;
+      document.getElementById('apiAdvanced').open = true;
     } else {
-      $('apiBase').value = 'http://127.0.0.1:8001';
+      $('apiBase').value = '';
     }
     if (res && res.hasJwt) {
       setStatus('ok', 'Saved session token is present. Use “Verify session” to test the API.');
