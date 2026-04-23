@@ -6,6 +6,8 @@
 
 const Store = (() => {
   const STORAGE_KEY = 'hen_habitat_decor_v1';
+  let _habitatRemoteHydrated = false;
+  let _suppressRemotePush = false;
 
   /** @type {Record<string, number>} decorationId -> owned count */
   let inventory = {};
@@ -30,6 +32,41 @@ const Store = (() => {
     homeBg: 'home sky & grass — buy once, then tap use to equip.',
     focusBg: 'focus creature lane — buy once, then tap use to equip.',
   };
+
+  function getPersistPayload() {
+    return {
+      inventory: { ...inventory },
+      placements: { ...placements },
+      ownedHomeBackgrounds: { ...ownedHomeBgs },
+      ownedFocusBackgrounds: { ...ownedFocusBgs },
+      homeBackgroundId,
+      focusBackgroundId,
+    };
+  }
+
+  /** Hydrate from server (`UserAppState`) and mirror to localStorage. */
+  function applyPersistPayload(h) {
+    if (!h || typeof h !== 'object') return;
+    _habitatRemoteHydrated = true;
+    _suppressRemotePush = true;
+    try {
+      if (h.inventory && typeof h.inventory === 'object') inventory = { ...h.inventory };
+      if (h.placements && typeof h.placements === 'object') placements = { ...h.placements };
+      if (h.ownedHomeBackgrounds && typeof h.ownedHomeBackgrounds === 'object') {
+        ownedHomeBgs = { default: true, ...h.ownedHomeBackgrounds };
+      }
+      if (h.ownedFocusBackgrounds && typeof h.ownedFocusBackgrounds === 'object') {
+        ownedFocusBgs = { default: true, ...h.ownedFocusBackgrounds };
+      }
+      ownedHomeBgs.default = true;
+      ownedFocusBgs.default = true;
+      if (typeof h.homeBackgroundId === 'string') homeBackgroundId = h.homeBackgroundId;
+      if (typeof h.focusBackgroundId === 'string') focusBackgroundId = h.focusBackgroundId;
+      _save();
+    } finally {
+      _suppressRemotePush = false;
+    }
+  }
 
   function _load() {
     try {
@@ -105,6 +142,9 @@ const Store = (() => {
       );
     } catch {
       /* noop */
+    }
+    if (!_suppressRemotePush && typeof UserAppState !== 'undefined' && UserAppState.schedulePush) {
+      UserAppState.schedulePush();
     }
   }
 
@@ -489,7 +529,7 @@ const Store = (() => {
   }
 
   function init() {
-    _load();
+    if (!_habitatRemoteHydrated) _load();
     _repairBgSelections();
     const backdrop = document.getElementById('storeBackdrop');
     const closeBtn = document.getElementById('storeCloseBtn');
@@ -515,6 +555,8 @@ const Store = (() => {
 
   return {
     init,
+    getPersistPayload,
+    applyPersistPayload,
     open,
     close,
     isOpen,

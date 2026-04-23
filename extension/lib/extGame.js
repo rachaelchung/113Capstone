@@ -1,0 +1,189 @@
+/**
+ * Extension variant: bottom creature lane + local economy; no Home / tracker hooks.
+ * Spawns into #extCreatureLane; forbidden UI is #extForbiddenBar.
+ */
+
+const ExtGame = (() => {
+  let food = 0;
+  let coins = 0;
+  let caught = 0;
+  let foodAccumulator = 0;
+
+  let spawnTimeout = null;
+  let forbidden = false;
+
+  const ECONOMY_STORAGE_KEY = 'henn_ext_game_economy_v1';
+  let _economySaveTimer = null;
+
+  function _scheduleEconomySave() {
+    if (_economySaveTimer) clearTimeout(_economySaveTimer);
+    _economySaveTimer = setTimeout(() => {
+      _economySaveTimer = null;
+      try {
+        localStorage.setItem(
+          ECONOMY_STORAGE_KEY,
+          JSON.stringify({ food, coins, caught, foodAccumulator })
+        );
+      } catch {
+        /* no-op */
+      }
+    }, 320);
+  }
+
+  function onFocusTick() {
+    foodAccumulator++;
+    if (foodAccumulator % 10 === 0) {
+      food++;
+      _scheduleEconomySave();
+    }
+  }
+
+  function _burstPointForCatch() {
+    const el = document.getElementById('timerDock');
+    if (el) {
+      const r = el.getBoundingClientRect();
+      if (r.width > 2) {
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      }
+    }
+    return { x: window.innerWidth / 2, y: Math.min(window.innerHeight * 0.2, 160) };
+  }
+
+  function spawnRewardBurst(clientX, clientY, text, variant = 'catch') {
+    const el = document.createElement('div');
+    el.setAttribute('role', 'presentation');
+    el.className = `ext-reward-burst ext-reward-burst--${variant}`;
+    el.textContent = text;
+    el.style.left = `${Math.round(clientX)}px`;
+    el.style.top = `${Math.round(clientY)}px`;
+    document.body.appendChild(el);
+    const done = () => {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    };
+    el.addEventListener('animationend', done, { once: true });
+    setTimeout(done, 980);
+  }
+
+  function setForbidden(isForbidden) {
+    forbidden = isForbidden;
+    const bar = document.getElementById('extForbiddenBar');
+    if (bar) {
+      bar.hidden = !forbidden;
+    }
+    if (forbidden) {
+      _clearSpawnQueue();
+      _removeAllCreatures();
+    }
+  }
+
+  function isForbidden() {
+    return forbidden;
+  }
+
+  function startSpawning() {
+    if (forbidden) return;
+    _scheduleNextSpawn();
+  }
+
+  function stopSpawning() {
+    _clearSpawnQueue();
+    _removeAllCreatures();
+  }
+
+  function _scheduleNextSpawn() {
+    _clearSpawnQueue();
+    /* First spawns were easy to miss at 8–20s; keep variety but start sooner. */
+    const delay = 2500 + Math.random() * 10000;
+    spawnTimeout = setTimeout(_spawnCreature, delay);
+  }
+
+  function _spawnCreature() {
+    if (forbidden) return;
+
+    const hab = document.getElementById('extCreatureLane');
+    if (!hab) return;
+    const habW = hab.offsetWidth || window.innerWidth;
+    const habH = hab.offsetHeight || 72;
+
+    const type = pickRandomCreatureType();
+    if (!type) return;
+
+    const goRight = Math.random() > 0.5;
+    const size = 36 + Math.floor(Math.random() * 22);
+    const bottomPx = 4 + Math.floor(Math.random() * 12);
+
+    const startX = goRight ? -60 : habW + 10;
+    const endX = goRight ? habW + 60 : -70;
+
+    const el = document.createElement('div');
+    el.className = 'ext-creature';
+    el.dataset.typeId = type.id;
+    el.innerHTML = buildCreatureSVG(type, size);
+    el.style.cssText = `left:${startX}px;bottom:${bottomPx}px;position:absolute;`;
+    el.addEventListener('click', () => _catchCreature(el, type));
+
+    hab.appendChild(el);
+    const duration = 10000 + Math.random() * 8000;
+    el.style.transition = `left ${duration}ms linear`;
+    requestAnimationFrame(() => {
+      el.style.left = `${endX}px`;
+    });
+    setTimeout(() => {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }, duration + 300);
+
+    _scheduleNextSpawn();
+  }
+
+  function _catchCreature(el) {
+    caught++;
+    _scheduleEconomySave();
+    const p = _burstPointForCatch();
+    spawnRewardBurst(p.x, p.y, '🌟 +1 🐾', 'catch');
+    if (el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  function _removeAllCreatures() {
+    const hab = document.getElementById('extCreatureLane');
+    if (!hab) return;
+    hab.querySelectorAll('.ext-creature').forEach((c) => c.remove());
+  }
+
+  function _clearSpawnQueue() {
+    clearTimeout(spawnTimeout);
+    spawnTimeout = null;
+  }
+
+  function showNotif(message) {
+    const n = document.getElementById('extNotif');
+    if (!n) return;
+    n.textContent = message;
+    n.classList.add('ext-notif--show');
+    setTimeout(() => n.classList.remove('ext-notif--show'), 2500);
+  }
+
+  function initEconomy() {
+    try {
+      const raw = localStorage.getItem(ECONOMY_STORAGE_KEY);
+      if (raw) {
+        const o = JSON.parse(raw);
+        if (Number.isFinite(o.food)) food = o.food;
+        if (Number.isFinite(o.coins)) coins = o.coins;
+        if (Number.isFinite(o.caught)) caught = o.caught;
+        if (Number.isFinite(o.foodAccumulator)) foodAccumulator = o.foodAccumulator;
+      }
+    } catch {
+      /* use defaults */
+    }
+  }
+
+  return {
+    onFocusTick,
+    setForbidden,
+    isForbidden,
+    startSpawning,
+    stopSpawning,
+    showNotif,
+    initEconomy,
+  };
+})();

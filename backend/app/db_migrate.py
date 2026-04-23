@@ -26,6 +26,18 @@ def migrate_sqlite_schema(engine: Engine) -> None:
         alters.append("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)")
     if "created_at" not in have:
         alters.append("ALTER TABLE users ADD COLUMN created_at TIMESTAMP")
+    tables = set(insp.get_table_names())
+    if "assignments" in tables:
+        ac = {c["name"] for c in insp.get_columns("assignments")}
+        if "coin_reward_granted" not in ac:
+            alters.append("ALTER TABLE assignments ADD COLUMN coin_reward_granted BOOLEAN NOT NULL DEFAULT 0")
+    if "todos" in tables:
+        tc = {c["name"] for c in insp.get_columns("todos")}
+        if "coin_reward_granted" not in tc:
+            alters.append("ALTER TABLE todos ADD COLUMN coin_reward_granted BOOLEAN NOT NULL DEFAULT 0")
+    if "app_state_json" not in have:
+        alters.append("ALTER TABLE users ADD COLUMN app_state_json TEXT")
+
     if not alters:
         return
     with engine.begin() as conn:

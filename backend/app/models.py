@@ -25,6 +25,8 @@ class User(db.Model):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=False), nullable=False, default=datetime.utcnow
     )
+    # JSON: { "v": 1, "game": {...}, "habitat": {...}, "bonds": {...} } for cross-device sync
+    app_state_json: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     courses: Mapped[list["Course"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     todos: Mapped[list["Todo"]] = relationship(back_populates="user", cascade="all, delete-orphan")
@@ -76,6 +78,7 @@ class Assignment(db.Model):
     points_value: Mapped[str] = mapped_column(String(80), default="")
     category_id: Mapped[str] = mapped_column(String(36), default="")
     earned_points: Mapped[str] = mapped_column(String(80), default="")
+    coin_reward_granted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     course: Mapped["Course"] = relationship(back_populates="assignments")
 
@@ -89,6 +92,7 @@ class Todo(db.Model):
     )
     task_name: Mapped[str] = mapped_column(String(500), default="")
     completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    coin_reward_granted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     user: Mapped["User"] = relationship(back_populates="todos")
 

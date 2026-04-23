@@ -9,11 +9,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadDecorationCatalog();
   await loadBackgroundsCatalog();
 
+  await UserAppState.pullAndApply();
+
   CreatureBond.init();
   Home.init();
   Store.init();
   Home.syncBackgroundFromStore();
   FocusBg.applyFromStore();
+
+  if (typeof Game !== 'undefined' && Game.initEconomy) Game.initEconomy();
 
   const timerDock = document.getElementById('timerDock');
   const screenToggleBtn = document.getElementById('screenToggleBtn');
@@ -23,7 +27,94 @@ document.addEventListener('DOMContentLoaded', async () => {
   const menuBtn = document.getElementById('menuBtn');
   const sideMenu = document.getElementById('sideMenu');
   const sideMenuBackdrop = document.getElementById('sideMenuBackdrop');
+  const sideMenuProfileBtn = document.getElementById('sideMenuProfileBtn');
+  const sideMenuLogoutBtn = document.getElementById('sideMenuLogoutBtn');
+  const profileOverlay = document.getElementById('profileOverlay');
+  const profileBackdrop = document.getElementById('profileBackdrop');
+  const profileCloseBtn = document.getElementById('profileCloseBtn');
+  const profileOverlayLogoutBtn = document.getElementById('profileOverlayLogoutBtn');
   const startBtn = document.getElementById('startBtn');
+
+  function escapeHtmlProfile(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function setProfileOpen(open) {
+    if (!profileOverlay) return;
+    profileOverlay.hidden = !open;
+    profileOverlay.classList.toggle('store-overlay--open', open);
+  }
+
+  async function openProfilePanel() {
+    const lede = document.getElementById('profileLede');
+    const dl = document.getElementById('profileDl');
+    const hint = document.getElementById('profileHint');
+    if (!lede || !dl || !hint) return;
+    setProfileOpen(true);
+    setMenuOpen(false);
+    dl.hidden = true;
+    hint.hidden = true;
+    dl.innerHTML = '';
+    lede.textContent = 'loading…';
+
+    let jwt = '';
+    try {
+      jwt = (localStorage.getItem('henn_tracker_jwt') || '').trim();
+    } catch {
+      jwt = '';
+    }
+
+    if (!jwt) {
+      lede.textContent = 'You are not signed in on this device.';
+      hint.hidden = false;
+      hint.textContent =
+        'Use log in or sign up on the home page to sync your tracker and keep a separate coin balance per account.';
+      return;
+    }
+
+    if (typeof TrackerApi === 'undefined' || !TrackerApi.fetchMe) {
+      lede.textContent = 'Profile could not be loaded.';
+      return;
+    }
+
+    const me = await TrackerApi.fetchMe();
+    if (!me) {
+      lede.textContent =
+        'Could not load your profile from the server. Your session may have expired — try signing in again from the home page.';
+      return;
+    }
+
+    lede.textContent = 'You are signed in as:';
+    dl.hidden = false;
+    const rows = [
+      ['username', me.username || '—'],
+      ['email', me.email || '—'],
+      ['display name', me.displayName || '—'],
+      ['user id', String(me.id || '—')],
+    ];
+    dl.innerHTML = rows
+      .map(
+        ([k, v]) =>
+          `<dt>${escapeHtmlProfile(k)}</dt><dd>${escapeHtmlProfile(v)}</dd>`,
+      )
+      .join('');
+  }
+
+  function performLogout() {
+    try {
+      localStorage.removeItem('henn_tracker_jwt');
+      localStorage.removeItem('henn_tracker_user_id');
+    } catch {
+      /* ignore */
+    }
+    setMenuOpen(false);
+    setProfileOpen(false);
+    window.location.href = 'index.html';
+  }
 
   /* ── screen navigation ─────────────────────── */
 
@@ -132,10 +223,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     sideMenuBackdrop.addEventListener('click', () => setMenuOpen(false));
   }
 
+  if (sideMenuProfileBtn) {
+    sideMenuProfileBtn.addEventListener('click', () => {
+      openProfilePanel();
+    });
+  }
+  if (sideMenuLogoutBtn) {
+    sideMenuLogoutBtn.addEventListener('click', () => performLogout());
+  }
+  if (profileCloseBtn) profileCloseBtn.addEventListener('click', () => setProfileOpen(false));
+  if (profileBackdrop) profileBackdrop.addEventListener('click', () => setProfileOpen(false));
+  if (profileOverlayLogoutBtn) {
+    profileOverlayLogoutBtn.addEventListener('click', () => performLogout());
+  }
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && sideMenu && !sideMenu.hidden) {
-      setMenuOpen(false);
+    if (e.key !== 'Escape') return;
+    if (profileOverlay && !profileOverlay.hidden) {
+      setProfileOpen(false);
+      return;
     }
+    if (sideMenu && !sideMenu.hidden) setMenuOpen(false);
   });
 
   const STORAGE_DOCK_MIN = 'timerDockMin';
@@ -421,17 +529,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (startBtn) {
       startBtn.textContent = 'start';
       startBtn.classList.remove('running');
-    }
-  });
-
-  /* ── button: forbidden site toggle ─────────── */
-
-  document.getElementById('forbiddenBtn').addEventListener('click', () => {
-    const nowForbidden = !Game.isForbidden();
-    Game.setForbidden(nowForbidden);
-
-    if (!nowForbidden && Timer.isRunning() && Timer.isFocus()) {
-      Game.startSpawning();
     }
   });
 

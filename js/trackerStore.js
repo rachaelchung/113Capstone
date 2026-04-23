@@ -12,6 +12,11 @@ let _persistTimer = null;
 
 const DEFAULT_COURSE_COLORS = ['#ff6b4a', '#4ec6e6', '#ffd54f', '#5ad18b', '#9b7ed9'];
 
+/** Coins for marking a dated assignment done (once per assignment, ever). */
+const COIN_REWARD_ASSIGNMENT = 15;
+/** Smaller reward for general to-dos (once per task, ever). */
+const COIN_REWARD_TODO = 4;
+
 function uid() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
   return `id_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -167,11 +172,16 @@ function migrate(raw) {
     else a.categoryId = String(a.categoryId);
     if (a.earnedPoints == null) a.earnedPoints = '';
     else a.earnedPoints = String(a.earnedPoints);
+    if (a.coinRewardGranted == null) a.coinRewardGranted = !!a.completed;
+  }
+  const todos = Array.isArray(raw.todos) ? raw.todos : [];
+  for (const t of todos) {
+    if (t.coinRewardGranted == null) t.coinRewardGranted = !!t.completed;
   }
   return {
     courses,
     assignments,
-    todos: Array.isArray(raw.todos) ? raw.todos : [],
+    todos,
     weeklyPlan: Array.isArray(raw.weeklyPlan) ? raw.weeklyPlan : [],
   };
 }
@@ -307,6 +317,7 @@ function seedDemoIfEmpty(state) {
         dueDate: due1,
         courseId: c1,
         completed: false,
+        coinRewardGranted: false,
         source: 'manual',
         pointsValue: '',
         categoryId: catProjects,
@@ -318,6 +329,7 @@ function seedDemoIfEmpty(state) {
         dueDate: due2,
         courseId: c2,
         completed: false,
+        coinRewardGranted: false,
         source: 'manual',
         pointsValue: '',
         categoryId: '',
@@ -325,8 +337,8 @@ function seedDemoIfEmpty(state) {
       },
     ],
     todos: [
-      { id: uid(), taskName: 'email advisor', completed: false },
-      { id: uid(), taskName: 'sketch weekly plan ui', completed: false },
+      { id: uid(), taskName: 'email advisor', completed: false, coinRewardGranted: false },
+      { id: uid(), taskName: 'sketch weekly plan ui', completed: false, coinRewardGranted: false },
     ],
   };
 }
@@ -513,6 +525,7 @@ const TrackerStore = {
         dueDate: String(row.dueDate).trim(),
         courseId: row.courseId,
         completed: false,
+        coinRewardGranted: false,
         source: row.source || 'syllabus',
         pointsValue: row.pointsValue != null ? String(row.pointsValue) : '',
         categoryId: row.categoryId != null ? String(row.categoryId) : '',
@@ -528,12 +541,19 @@ const TrackerStore = {
   toggleAssignmentComplete(id) {
     const a = this.state.assignments.find((x) => x.id === id);
     if (!a) return;
+    const was = !!a.completed;
     a.completed = !a.completed;
+    if (a.completed && !was && !a.coinRewardGranted) {
+      if (typeof Game !== 'undefined' && Game.awardCoins) {
+        Game.awardCoins(COIN_REWARD_ASSIGNMENT);
+      }
+      a.coinRewardGranted = true;
+    }
     this.persist();
   },
 
   addTodo(taskName) {
-    const t = { id: uid(), taskName: taskName.trim(), completed: false };
+    const t = { id: uid(), taskName: taskName.trim(), completed: false, coinRewardGranted: false };
     this.state.todos.push(t);
     this.persist();
     return t;
@@ -542,7 +562,14 @@ const TrackerStore = {
   toggleTodo(id) {
     const t = this.state.todos.find((x) => x.id === id);
     if (!t) return;
+    const was = !!t.completed;
     t.completed = !t.completed;
+    if (t.completed && !was && !t.coinRewardGranted) {
+      if (typeof Game !== 'undefined' && Game.awardCoins) {
+        Game.awardCoins(COIN_REWARD_TODO);
+      }
+      t.coinRewardGranted = true;
+    }
     this.persist();
   },
 
@@ -601,6 +628,7 @@ const TrackerStore = {
       dueDate: due.slice(0, 10),
       courseId,
       completed: false,
+      coinRewardGranted: false,
       source,
       pointsValue: pointsValue != null ? String(pointsValue) : '',
       categoryId: '',
@@ -614,12 +642,20 @@ const TrackerStore = {
   updateAssignment(assignmentId, fields) {
     const a = this.state.assignments.find((x) => x.id === assignmentId);
     if (!a) return;
+    const wasCompleted = !!a.completed;
     if (fields.name != null) a.name = String(fields.name).trim();
     if (fields.dueDate != null) a.dueDate = String(fields.dueDate).trim().slice(0, 10);
     if (fields.pointsValue != null) a.pointsValue = String(fields.pointsValue);
     if (fields.completed != null) a.completed = !!fields.completed;
     if (fields.categoryId != null) a.categoryId = String(fields.categoryId || '');
     if (fields.earnedPoints != null) a.earnedPoints = String(fields.earnedPoints);
+    const nowCompleted = !!a.completed;
+    if (nowCompleted && !wasCompleted && !a.coinRewardGranted) {
+      if (typeof Game !== 'undefined' && Game.awardCoins) {
+        Game.awardCoins(COIN_REWARD_ASSIGNMENT);
+      }
+      a.coinRewardGranted = true;
+    }
     this.persist();
   },
 

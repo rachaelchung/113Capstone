@@ -8,6 +8,8 @@
 
 const CreatureBond = (() => {
   const STORAGE_KEY = 'hen_creature_bond_v1';
+  let _bondRemoteHydrated = false;
+  let _suppressRemotePush = false;
 
   /** @type {{ bonds: Record<string, { feeds: number, pets: number, chats: number }> }} */
   let state = { bonds: {} };
@@ -138,6 +140,25 @@ const CreatureBond = (() => {
     return 'neutral';
   }
 
+  /** Matches server `bonds` section: `{ bonds: { <residentId>: stats } }`. */
+  function getPersistPayload() {
+    return { bonds: { ...state.bonds } };
+  }
+
+  /** Argument is API `data.bonds` (same shape as getPersistPayload). */
+  function applyPersistPayload(section) {
+    if (!section || typeof section !== 'object') return;
+    const map = section.bonds && typeof section.bonds === 'object' ? section.bonds : {};
+    state = { bonds: { ...map } };
+    _bondRemoteHydrated = true;
+    _suppressRemotePush = true;
+    try {
+      _save();
+    } finally {
+      _suppressRemotePush = false;
+    }
+  }
+
   function _load() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -156,6 +177,9 @@ const CreatureBond = (() => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {
       /* noop */
+    }
+    if (!_suppressRemotePush && typeof UserAppState !== 'undefined' && UserAppState.schedulePush) {
+      UserAppState.schedulePush();
     }
   }
 
@@ -204,7 +228,7 @@ const CreatureBond = (() => {
   }
 
   function init() {
-    _load();
+    if (!_bondRemoteHydrated) _load();
     if (overlay) return;
 
     overlay = document.createElement('div');
@@ -380,6 +404,8 @@ const CreatureBond = (() => {
 
   return {
     init,
+    getPersistPayload,
+    applyPersistPayload,
     openForResident,
     close,
     isOpen,

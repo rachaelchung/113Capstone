@@ -688,7 +688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     root.innerHTML = `
       <h2 class="tracker-h1">calendar</h2>
-      <p class="tracker-lede">dated assignments only (per spec). tap a row to toggle done.</p>
+      <p class="tracker-lede">dated assignments only. tap a row to toggle done — coins are awarded only the first time you finish each assignment.</p>
       <div class="tracker-cal-head">
         <span class="tracker-cal-title">${escapeHtml(monthLabel)}</span>
         <div class="tracker-row" style="margin:0">
@@ -756,7 +756,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     root.innerHTML = `
       <h2 class="tracker-h1">to-do</h2>
-      <p class="tracker-lede">undated tasks live here until you drag them into the weekly board (they keep no due date).</p>
+      <p class="tracker-lede">undated tasks live here until you drag them into the weekly board (they keep no due date). finishing a task awards a few coins once per task.</p>
       <form id="todoAddForm" class="tracker-row" style="align-items:flex-end">
         <div class="tracker-field" style="flex:2 1 280px">
           <label class="tracker-label" for="todoName">new task</label>
@@ -809,7 +809,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderWeekly() {
     const root = els.weeklyRoot;
     if (!root) return;
-    const { assignments, todos, weeklyPlan, settings } = TrackerStore.state;
+    const { assignments, todos, weeklyPlan } = TrackerStore.state;
     const weekDays = TrackerStore.weekRangeFromMonday(weekCursor);
     const weekLabel = `${weekDays[0]} → ${weekDays[6]}`;
 
@@ -859,7 +859,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .join('') || `<span style="font-size:0.8rem;color:var(--text-muted)">nothing left to drag — nice.</span>`}
         </div>
       </div>
-      <p class="tracker-footnote">drag the ⋮ handle to move a chip to another day. × removes it from this week only (not from your list). check the box when that slice is done.</p>
+      <p class="tracker-footnote">drag the ⋮ handle to move a chip to another day. × removes it from this week only (not from your list). check the box when that slice is done — assignment and to-do coins each count only once per item, even if you uncheck later.</p>
     `;
 
     const wkGrid = root.querySelector('#wkGrid');

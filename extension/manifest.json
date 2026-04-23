@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "head empty — focus overlay",
+  "version": "0.1.0",
+  "description": "Floating pomodoro timer and creature lane while you browse. Pauses on sites you mark as off-limits.",
+  "action": {
+    "default_title": "Focus overlay is active on each page (load unpacked to enable)."
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "timer.html",
+        "lane.html",
+        "overlay.html",
+        "overlay.css",
+        "overlay.js",
+        "css/*",
+        "lib/*",
+        "data/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "permissions": ["storage", "tabs"]
+}

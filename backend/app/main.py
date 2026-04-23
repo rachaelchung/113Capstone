@@ -29,6 +29,7 @@ from app.schemas import (
     WeeklySuggestResponse,
     WeeklySuggestion,
 )
+from app.app_state_service import get_app_state_dict, replace_app_state_for_user
 from app.tracker_service import ensure_default_user, replace_state_for_user, state_dict_for_user
 
 load_dotenv()
@@ -66,6 +67,16 @@ def _resolve_tracker_user_id() -> int:
         return max(1, int(raw))
     except ValueError:
         return 1
+
+
+def _resolve_user_id_jwt_only() -> int | None:
+    """For per-user blobs (habitat / economy): require Bearer JWT (no X-Tracker-User-Id spoofing)."""
+    auth = (request.headers.get("Authorization") or "").strip()
+    if not auth.lower().startswith("bearer "):
+        return None
+    tok = auth[7:].strip()
+    secret = str(current_app.config.get("SECRET_KEY") or "")
+    return verify_tracker_jwt(tok, secret)
 
 
 def create_app() -> Flask:
@@ -122,6 +133,34 @@ def create_app() -> Flask:
         except ValueError as e:
             db.session.rollback()
             return jsonify({"detail": str(e)}), 422
+        return jsonify({"ok": True})
+
+    @app.route("/api/user/app-state", methods=["GET"])
+    def user_app_state_get():
+        uid = _resolve_user_id_jwt_only()
+        if uid is None:
+            return jsonify({"detail": "Bearer token required"}), 401
+        if db.session.get(User, uid) is None:
+            return jsonify({"detail": "user not found"}), 404
+        try:
+            return jsonify(get_app_state_dict(uid))
+        except ValueError as e:
+            return jsonify({"detail": str(e)}), 404
+
+    @app.route("/api/user/app-state", methods=["PUT"])
+    def user_app_state_put():
+        uid = _resolve_user_id_jwt_only()
+        if uid is None:
+            return jsonify({"detail": "Bearer token required"}), 401
+        if db.session.get(User, uid) is None:
+            return jsonify({"detail": "user not found"}), 404
+        data = request.get_json(silent=True)
+        if not isinstance(data, dict):
+            return jsonify({"detail": "JSON object body required"}), 422
+        try:
+            replace_app_state_for_user(uid, data)
+        except ValueError as e:
+            return jsonify({"detail": str(e)}), 404
         return jsonify({"ok": True})
 
     @app.route("/api/parse-syllabus", methods=["POST"])

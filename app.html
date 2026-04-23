@@ -80,16 +80,23 @@
       <div class="side-menu__panel" role="dialog" aria-modal="true" aria-labelledby="sideMenuTitle">
         <h2 class="side-menu__title" id="sideMenuTitle">menu</h2>
         <p class="side-menu__hint">your habitat, focus timer, and assignment tracker.</p>
-        <nav class="side-menu__nav" aria-label="screens">
-          <p class="side-menu__section-label">home</p>
-          <button type="button" class="side-menu__nav-btn" data-app-screen="home">habitat</button>
-          <button type="button" class="side-menu__nav-btn" data-app-screen="focus">focus timer</button>
-          <p class="side-menu__section-label">assignments</p>
-          <button type="button" class="side-menu__nav-btn tracker-tab" data-tracker-tab="courses">courses</button>
-          <button type="button" class="side-menu__nav-btn tracker-tab" data-tracker-tab="weekly">weekly</button>
-          <button type="button" class="side-menu__nav-btn tracker-tab" data-tracker-tab="todo">to-do</button>
-          <button type="button" class="side-menu__nav-btn tracker-tab" data-tracker-tab="calendar">calendar</button>
-        </nav>
+        <div class="side-menu__scroll">
+          <nav class="side-menu__nav" aria-label="screens">
+            <p class="side-menu__section-label">home</p>
+            <button type="button" class="side-menu__nav-btn" data-app-screen="home">habitat</button>
+            <button type="button" class="side-menu__nav-btn" data-app-screen="focus">focus timer</button>
+            <p class="side-menu__section-label">assignments</p>
+            <button type="button" class="side-menu__nav-btn tracker-tab" data-tracker-tab="courses">courses</button>
+            <button type="button" class="side-menu__nav-btn tracker-tab" data-tracker-tab="weekly">weekly</button>
+            <button type="button" class="side-menu__nav-btn tracker-tab" data-tracker-tab="todo">to-do</button>
+            <button type="button" class="side-menu__nav-btn tracker-tab" data-tracker-tab="calendar">calendar</button>
+          </nav>
+        </div>
+        <div class="side-menu__footer">
+          <p class="side-menu__section-label">account</p>
+          <button type="button" class="side-menu__nav-btn" id="sideMenuProfileBtn">profile</button>
+          <button type="button" class="side-menu__nav-btn side-menu__nav-btn--danger" id="sideMenuLogoutBtn">log out</button>
+        </div>
       </div>
     </div>
 
@@ -130,9 +137,6 @@
                 <button class="btn btn--start" id="startBtn">start</button>
                 <button class="btn btn--reset" id="resetBtn">reset</button>
               </div>
-              <button class="btn btn--forbidden" id="forbiddenBtn">
-                simulate forbidden site
-              </button>
             </div>
           </div>
         </div>
@@ -159,10 +163,6 @@
         <div class="cloud" style="width:62px;height:20px;top:18px;left:12%"></div>
         <div class="cloud" style="width:44px;height:15px;top:34px;left:30%"></div>
         <div class="cloud" style="width:72px;height:22px;top:12px;left:60%"></div>
-
-        <div class="forbidden-flash" id="forbiddenFlash">
-          <div class="forbidden-banner">forbidden site — timer paused</div>
-        </div>
 
         <div class="notif" id="notif"></div>
       </div>
@@ -222,12 +222,20 @@
 
           <div id="residentLayer" class="resident-layer"></div>
         </div>
-
-        <p class="home-hint">
-          residents pathfind on the grass — tap one to visit. tap glowing spots to place decor you bought in the shop (counts like inventory).
-        </p>
       </div>
     </section>
+
+    <div id="profileOverlay" class="store-overlay" hidden>
+      <div class="store-overlay__backdrop" id="profileBackdrop" tabindex="-1" aria-hidden="true"></div>
+      <div class="store-card profile-card" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+        <button type="button" class="store-close" id="profileCloseBtn" aria-label="Close profile">×</button>
+        <h2 class="store-title" id="profileTitle">profile</h2>
+        <p class="profile-lede" id="profileLede">loading…</p>
+        <dl class="profile-dl" id="profileDl" hidden></dl>
+        <p class="profile-hint" id="profileHint" hidden></p>
+        <button type="button" class="btn btn--reset profile-logout" id="profileOverlayLogoutBtn">log out</button>
+      </div>
+    </div>
 
     <div id="storeOverlay" class="store-overlay" hidden>
       <div class="store-overlay__backdrop" id="storeBackdrop" tabindex="-1" aria-hidden="true"></div>
@@ -287,6 +295,7 @@
   <script src="js/focusBg.js"></script>
   <script src="js/trackerStore.js"></script>
   <script src="js/trackerApi.js"></script>
+  <script src="js/userAppState.js"></script>
   <script src="js/trackerMain.js"></script>
   <script src="js/main.js"></script>
 </body>

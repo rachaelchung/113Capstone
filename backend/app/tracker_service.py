@@ -38,6 +38,7 @@ def state_dict_for_user(user_id: int) -> dict[str, Any]:
                     "dueDate": (a.due_date or "")[:10],
                     "courseId": a.course_id,
                     "completed": bool(a.completed),
+                    "coinRewardGranted": bool(getattr(a, "coin_reward_granted", False)),
                     "source": a.source or "manual",
                     "pointsValue": a.points_value or "",
                     "categoryId": a.category_id or "",
@@ -46,7 +47,12 @@ def state_dict_for_user(user_id: int) -> dict[str, Any]:
             )
 
     todos_out = [
-        {"id": t.id, "taskName": t.task_name or "", "completed": bool(t.completed)}
+        {
+            "id": t.id,
+            "taskName": t.task_name or "",
+            "completed": bool(t.completed),
+            "coinRewardGranted": bool(getattr(t, "coin_reward_granted", False)),
+        }
         for t in db.session.scalars(select(Todo).where(Todo.user_id == user_id).order_by(Todo.id))
     ]
 
@@ -143,6 +149,9 @@ def replace_state_for_user(user_id: int, payload: dict[str, Any]) -> None:
         due = str(row.get("dueDate", "")).strip()[:10]
         if not aid or not course_id or not name or not due:
             continue
+        crg = row.get("coinRewardGranted")
+        if crg is None:
+            crg = bool(row.get("completed"))
         db.session.add(
             Assignment(
                 id=aid,
@@ -150,6 +159,7 @@ def replace_state_for_user(user_id: int, payload: dict[str, Any]) -> None:
                 name=name[:500],
                 due_date=due,
                 completed=bool(row.get("completed")),
+                coin_reward_granted=bool(crg),
                 source=str(row.get("source", "manual") or "manual")[:40],
                 points_value=str(row.get("pointsValue", "") or "")[:80],
                 category_id=str(row.get("categoryId", "") or "")[:36],
@@ -164,12 +174,16 @@ def replace_state_for_user(user_id: int, payload: dict[str, Any]) -> None:
         task_name = str(row.get("taskName", "")).strip()
         if not tid or not task_name:
             continue
+        crg = row.get("coinRewardGranted")
+        if crg is None:
+            crg = bool(row.get("completed"))
         db.session.add(
             Todo(
                 id=tid,
                 user_id=user_id,
                 task_name=task_name[:500],
                 completed=bool(row.get("completed")),
+                coin_reward_granted=bool(crg),
             )
         )
 

@@ -12,6 +12,15 @@ function getTrackerApiBase() {
   return '';
 }
 
+function getStoredTrackerJwt() {
+  try {
+    const j = localStorage.getItem('henn_tracker_jwt');
+    return j && j.trim() ? j.trim() : '';
+  } catch {
+    return '';
+  }
+}
+
 const TrackerApi = {
   getBaseUrl: getTrackerApiBase,
 
@@ -43,6 +52,59 @@ const TrackerApi = {
       throw new Error(msg);
     }
     return data;
+  },
+
+  /**
+   * Current user from `/api/auth/me` (requires saved JWT + configured API base).
+   * @returns {Promise<{ id: number, username: string, email: string, displayName: string } | null>}
+   */
+  async fetchMe() {
+    const base = getTrackerApiBase();
+    const jwt = getStoredTrackerJwt();
+    if (!base || !jwt) return null;
+    try {
+      const res = await fetch(`${base.replace(/\/$/, '')}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
+      const data = await this.parseResponse(res);
+      const u = data?.user;
+      if (!u || typeof u !== 'object') return null;
+      return {
+        id: Number(u.id) || 0,
+        username: String(u.username || ''),
+        email: String(u.email || ''),
+        displayName: String(u.displayName || ''),
+      };
+    } catch {
+      return null;
+    }
+  },
+
+  /** Cross-device habitat + economy + bonds (Bearer JWT required). */
+  async fetchUserAppState() {
+    const base = getTrackerApiBase();
+    const jwt = getStoredTrackerJwt();
+    if (!base || !jwt) return null;
+    try {
+      const res = await fetch(`${base.replace(/\/$/, '')}/api/user/app-state`, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
+      return await this.parseResponse(res);
+    } catch {
+      return null;
+    }
+  },
+
+  async putUserAppState(jsonBody) {
+    const base = getTrackerApiBase();
+    const jwt = getStoredTrackerJwt();
+    if (!base || !jwt) throw new Error('missing api base or login');
+    const res = await fetch(`${base.replace(/\/$/, '')}/api/user/app-state`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${jwt}` },
+      body: JSON.stringify(jsonBody),
+    });
+    return this.parseResponse(res);
   },
 
   async post(path, jsonBody) {
