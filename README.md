@@ -4,6 +4,9 @@
 
 ## running it
 
+Open the page on GitHub Pages: https://rachaelchung.github.io/113Capstone/
+Download the chrome extension from here: 
+
 Open `index.html` for the marketing + sign-in page, or `app.html` for the habitat / timer / tracker. No build step, no dependencies.
 
 For the best experience, use a local server (avoids any browser file:// quirks and matches API CORS):
@@ -32,18 +35,89 @@ Then open [http://localhost:8080](http://localhost:8080) (or VS Code Live Server
 ## project structure
 
 ```
-head-empty/
-├── index.html          # landing + log in / sign up (calls backend auth)
-├── app.html            # main app (habitat, timer, tracker)
+113Capstone/
+├── index.html              # landing + log in / sign up (calls backend auth)
+├── app.html                # main app (habitat, timer, tracker)
+├── tracker.html            # standalone assignment tracker entry
+├── favicon.ico
+│
 ├── css/
-│   ├── reset.css       # base reset
-│   └── style.css       # all styling (tokens, habitat, timer, controls)
-├── js/
-│   ├── creatures.js    # creature type definitions + SVG factory
-│   ├── timer.js        # pomodoro logic (phases, countdown, ring UI)
-│   ├── game.js         # spawning, catching, food/coin economy
-│   └── main.js         # entry point — wires everything together
-└── assets/             # (empty for now — future: creature sprites, sounds)
+│   ├── reset.css           # base reset
+│   ├── style.css           # tokens, habitat, timer, home/auth styling
+│   └── tracker.css         # assignment tracker styling
+│
+├── js/                     # frontend modules (plain ES modules, no build)
+│   ├── main.js             # app.html entry — wires timer + habitat + tracker
+│   ├── home.js             # index.html entry — marketing + auth flow
+│   ├── apiBaseConfig.js    # HENN_REMOTE_API_BASE (production API URL)
+│   ├── apiResolve.js       # probes localhost:8001, falls back to remote
+│   ├── userAppState.js     # load/save per-user state through backend
+│   ├── store.js            # coins / food / collection persistence
+│   ├── timer.js            # pomodoro phases, countdown, ring UI
+│   ├── game.js             # spawning, catching, food/coin economy
+│   ├── creatures.js        # creature type definitions + SVG factory
+│   ├── creatureBond.js     # bond levels + per-creature progress
+│   ├── backgrounds.js      # habitat background picker
+│   ├── focusBg.js          # focus-phase background effects
+│   ├── decorations.js      # habitat decoration placement
+│   ├── trackerMain.js      # tracker page controller
+│   ├── trackerStore.js     # assignment state (local + synced)
+│   └── trackerApi.js       # fetch wrappers for /api/tracker
+│
+├── data/                   # static JSON consumed by the frontend
+│   ├── creatures.json
+│   ├── backgrounds.json
+│   └── decoration.json
+│
+├── backend/                # Flask API (SQLite + SQLAlchemy)
+│   ├── wsgi.py             # entry for `flask --app wsgi:app run`
+│   ├── requirements.txt
+│   ├── .env.example
+│   ├── instance/
+│   │   └── tracker.db      # local SQLite DB (gitignored in prod)
+│   ├── scripts/
+│   │   └── print_pdf_text.py
+│   └── app/
+│       ├── __init__.py         # create_app() + CORS + blueprints
+│       ├── main.py             # health + misc routes
+│       ├── config.py           # env config (CORS_ORIGINS, OAuth, etc.)
+│       ├── extensions.py       # db, migrate, login_manager
+│       ├── models.py           # SQLAlchemy models (User, Assignment, …)
+│       ├── schemas.py          # request/response shapes
+│       ├── db_migrate.py       # lightweight schema migrations
+│       ├── auth_routes.py      # /api/auth/* (email + Google OAuth)
+│       ├── auth_service.py     # password hashing, sessions, OAuth glue
+│       ├── app_state_service.py# load/save per-user app state
+│       ├── tracker_service.py  # assignment CRUD + syllabus parsing
+│       ├── grade_calculation.py# weighted grade math
+│       ├── pdf_text.py         # extract text from syllabus PDFs
+│       └── openai_json.py      # structured LLM calls for syllabus parse
+│
+└── extension/              # Chrome extension (Manifest V3)
+    ├── manifest.json
+    ├── background.js           # service worker: auth bridge, messaging
+    ├── popup.html / popup.js   # toolbar popup (timer + quick habitat)
+    ├── options.html / options.js
+    ├── content.js              # runs on forbidden sites → overlay injection
+    ├── content-app-auth.js     # bridges auth cookies from the web app
+    ├── overlay.html / overlay.js / overlay.css  # full habitat overlay
+    ├── overlay-timer.html / overlay-timer.js    # floating timer
+    ├── overlay-lane.html / overlay-lane.js      # creature lane overlay
+    ├── timer.html              # standalone timer page
+    ├── lane.html               # standalone lane page
+    ├── css/
+    │   ├── timer-embed.css
+    │   └── lane-embed.css
+    ├── lib/                    # shared logic reused from js/
+    │   ├── timer.js
+    │   ├── creatures.js
+    │   ├── extGame.js
+    │   ├── timer-embed.js
+    │   └── lane-embed.js
+    ├── data/
+    │   └── creatures.json
+    └── icons/
+        └── icon-512.png
 ```
 
 ---
