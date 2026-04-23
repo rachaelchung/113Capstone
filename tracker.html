@@ -1,6 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function () {
+      try {
+        if (!/\.github\.io$/i.test(window.location.hostname)) return;
+        var parts = window.location.pathname.split('/').filter(Boolean);
+        if (!parts.length) return;
+        var seg = parts[0];
+        if (!seg || /\.html?$/i.test(seg)) return;
+        var b = document.createElement('base');
+        b.href = '/' + seg + '/';
+        document.head.prepend(b);
+      } catch (e) {
+        /* no-op */
+      }
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>head empty — assignment tracker</title>
