@@ -108,7 +108,7 @@ body.ext-ov-body {
 html.ext-ov-timer .timer-dock:not(.timer-dock--minimized) {
   width: auto !important;
   max-width: 520px !important;
-  min-width: 240px;
+  min-width: 300px;
   right: 0;
   top: calc(12px + env(safe-area-inset-top, 0));
   left: auto;
@@ -230,7 +230,6 @@ html.ext-ov-timer .timer-dock__handle-title {
   border-radius: 26px;
   overflow: hidden;
   background: linear-gradient(165deg, #4a4558 0%, #2f2c3a 45%, #25232e 100%);
-  box-shadow: var(--card-shadow-lg);
 }
 
 html.ext-ov-timer .timer-dock:not(.timer-dock--minimized) {

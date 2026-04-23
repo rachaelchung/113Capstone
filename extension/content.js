@@ -62,7 +62,7 @@ if (window.top !== window) {
   left: auto !important;
   width: min(520px, calc(100vw - 20px)) !important;
   min-height: 120px !important;
-  height: 200px !important;
+  height: 240px !important;
 }
 #henn-lane-iframe {
   position: fixed !important;
@@ -72,7 +72,7 @@ if (window.top !== window) {
   bottom: 0 !important;
   top: auto !important;
   width: 100% !important;
-  height: 72px !important;
+  height: 85px !important;
   min-width: 0 !important;
   min-height: 0 !important;
 }
@@ -95,7 +95,7 @@ if (window.top !== window) {
     frameTimer.setAttribute('allowtransparency', 'true');
     frameTimer.setAttribute(
       'style',
-      'position:fixed;z-index:2147483001;right:10px;top:12px;left:auto;width:min(520px,calc(100vw - 20px));min-height:120px;height:200px;border:0;margin:0;padding:0;background:transparent;pointer-events:auto;opacity:1;'
+      'position:fixed;z-index:2147483001;right:10px;top:12px;left:auto;width:min(520px,calc(100vw - 20px));min-height:120px;height:240px;border:0;margin:0;padding:0;background:transparent;pointer-events:auto;opacity:1;'
     );
 
     const frameLane = document.createElement('iframe');
@@ -151,8 +151,8 @@ if (window.top !== window) {
           const isMin = d.min === true || d.w <= 72;
           const ww = isMin
             ? d.w
-            : Math.min(Math.max(d.w, 240), window.innerWidth - 16);
-          const hh = isMin ? d.h : Math.max(d.h, 150);
+            : Math.min(Math.max(d.w, 380), window.innerWidth - 16);
+          const hh = isMin ? d.h : Math.max(d.h + 32, 240);
           frameTimer.style.setProperty('left', 'auto', 'important');
           frameTimer.style.setProperty('right', '10px', 'important');
           if (isMin) {
