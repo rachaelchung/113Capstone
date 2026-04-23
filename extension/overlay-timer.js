@@ -89,6 +89,10 @@
 
   window.addEventListener('message', (ev) => {
     const d = ev.data;
+    if (d && d.source === 'henn-ext' && d.type === 'henn-lane-ready') {
+      applyFocusGuard();
+      return;
+    }
     if (d && d.source === 'henn-ext' && d.type === 'henn-timer-forbidden-ui' && d.hidden != null) {
       const bar = document.getElementById('extForbiddenBar');
       if (bar) bar.hidden = d.hidden;

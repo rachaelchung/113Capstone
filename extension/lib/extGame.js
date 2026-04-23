@@ -122,7 +122,7 @@ const ExtGame = (() => {
   function _scheduleNextSpawn() {
     _clearSpawnQueue();
     /* First spawns were easy to miss at 8–20s; keep variety but start sooner. */
-    const delay = 2500 + Math.random() * 10000;
+    const delay = 500 + Math.random() * 1000;
     spawnTimeout = setTimeout(_spawnCreature, delay);
   }
 
@@ -175,9 +175,24 @@ const ExtGame = (() => {
     _scheduleNextSpawn();
   }
 
-  function _catchCreature(el) {
+  function _syncPendingCatchToBackend(type) {
+    if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) return;
+    try {
+      chrome.runtime.sendMessage(
+        { type: 'henn-pending-catch', typeId: type && type.id ? String(type.id) : '' },
+        () => {
+          void chrome.runtime.lastError;
+        }
+      );
+    } catch {
+      /* no-op */
+    }
+  }
+
+  function _catchCreature(el, type) {
     caught++;
     _scheduleEconomySave();
+    _syncPendingCatchToBackend(type);
     const p = _burstPointForCatch();
     spawnRewardBurst(p.x, p.y, '🌟 +1 🐾', 'catch');
     if (el.parentNode) el.parentNode.removeChild(el);

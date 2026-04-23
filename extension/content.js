@@ -72,7 +72,7 @@ if (window.top !== window) {
   bottom: 0 !important;
   top: auto !important;
   width: 100% !important;
-  height: 85px !important;
+  height: 95px !important;
   min-width: 0 !important;
   min-height: 0 !important;
 }
@@ -208,9 +208,18 @@ if (window.top !== window) {
       } catch {
         /* no-op */
       }
+      /* Timer init may run before the lane iframe has a message listener; retry shortly. */
+      setTimeout(() => {
+        forwardToTimer({ source: 'henn-ext', type: 'henn-lane-ready' });
+      }, 300);
     }
 
     frameTimer.addEventListener('load', onTimerReady);
+    /* Lane often loads after the timer; early postMessage to the lane is dropped.
+     * When the lane finishes loading, nudge the timer to re-send guard + spawn state. */
+    frameLane.addEventListener('load', () => {
+      forwardToTimer({ source: 'henn-ext', type: 'henn-lane-ready' });
+    });
     /* lane may load later; timer drives forbidden. */
 
     chrome.runtime.onMessage.addListener((msg) => {

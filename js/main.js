@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadBackgroundsCatalog();
 
   await UserAppState.pullAndApply();
-
   CreatureBond.init();
   Home.init();
   Store.init();
@@ -136,7 +135,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function setScreen(name) {
+  function setScreen(name, opts) {
+    const skipHomePull = opts && opts.skipHomePull;
     document.querySelectorAll('.screen').forEach((el) => {
       if (!el.id.startsWith('screen-')) return;
       const key = el.id.replace(/^screen-/, '');
@@ -176,8 +176,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    if (name === 'home') Home.enter();
-    else Home.leave();
+    if (name === 'home') {
+      if (skipHomePull) {
+        Home.enter();
+      } else {
+        (async () => {
+          try {
+            if (
+              typeof UserAppState !== 'undefined' &&
+              UserAppState.canSync &&
+              UserAppState.pullAndApply &&
+              UserAppState.canSync()
+            ) {
+              await UserAppState.pullAndApply();
+            }
+          } catch (e) {
+            console.warn('UserAppState: pull before habitat', e);
+          }
+          const homeScreen = document.getElementById('screen-home');
+          if (!homeScreen || !homeScreen.classList.contains('screen--active')) return;
+          Home.enter();
+        })();
+      }
+    } else {
+      Home.leave();
+    }
   }
 
   if (sideMenu) {
@@ -433,7 +456,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     handle.addEventListener('pointercancel', endDrag);
   }
 
-  setScreen('home');
+  setScreen('home', { skipHomePull: true });
 
   let startDockMin = false;
   try {

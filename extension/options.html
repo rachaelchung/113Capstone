@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>head empty — account</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 1.25rem 1.5rem 2rem;
+      max-width: 28rem;
+      color: #1a1520;
+      background: #f4f0f8;
+    }
+    h1 { font-size: 1.1rem; font-weight: 700; margin: 0 0 0.25rem; }
+    p.muted { color: #5c5566; font-size: 0.9rem; margin: 0 0 1rem; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+    input {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      border: 1px solid #c9c2d4;
+      border-radius: 8px;
+      font: inherit;
+    }
+    input:focus { outline: 2px solid #7b6fd6; border-color: #7b6fd6; }
+    .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    button {
+      font: inherit;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+    button.primary { background: #4a3f8c; color: #fff; }
+    button.primary:hover { background: #3d3580; }
+    button.ghost { background: #e8e2f0; color: #2a2038; }
+    button.ghost:hover { background: #ddd5ea; }
+    .status {
+      margin-top: 1rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      min-height: 1.2em;
+      white-space: pre-wrap;
+    }
+    .status:empty { display: none; }
+    .status--ok { background: #e2f4e8; color: #14532d; }
+    .status--error { background: #fde8e8; color: #7f1d1d; }
+    .callout {
+      font-size: 0.9rem;
+      color: #3a3248;
+      background: #ece6f5;
+      border: 1px solid #c9bddc;
+      border-radius: 8px;
+      padding: 0.75rem 0.85rem;
+      margin-bottom: 1rem;
+    }
+    .callout strong { display: block; margin-bottom: 0.35rem; }
+  </style>
+</head>
+<body>
+  <h1>head empty — sign in</h1>
+  <p class="muted">Connects the extension to your backend (same account as the web app). Local dev: run Flask, then set API base to match.</p>
+
+  <div class="callout">
+    <strong>Google (and “continue in browser”)</strong>
+    After you sign in on your site, open <code>app.html</code> (or the page that saves your session) in this same browser. The extension copies your session and API base from the page automatically. Refresh the app tab once if needed, then use “Verify session” below. Deployed site: your exact origin (e.g. <code>https://your.app/*</code>) must be listed in the extension <code>manifest.json</code> under <code>content_scripts</code> next to the localhost entries, then reload the extension.
+  </div>
+
+  <form id="loginForm" autocomplete="on">
+    <label for="apiBase">API base URL (no trailing slash)</label>
+    <input type="url" id="apiBase" name="apiBase" placeholder="http://127.0.0.1:8001" spellcheck="false" required />
+
+    <label for="ident">Email or username</label>
+    <input type="text" id="ident" name="ident" autocomplete="username" required />
+
+    <label for="password">Password (email / username accounts; skip if you only use Google + browser tab)</label>
+    <input type="password" id="password" name="password" autocomplete="current-password" />
+
+    <div class="row">
+      <button type="submit" class="primary" id="loginBtn">Sign in</button>
+      <button type="button" class="ghost" id="verifyBtn" title="GET /api/auth/me with saved token">Verify session</button>
+      <button type="button" class="ghost" id="logoutBtn">Log out</button>
+    </div>
+  </form>
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>

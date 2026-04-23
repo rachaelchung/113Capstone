@@ -10,6 +10,8 @@ const Home = (() => {
   /** @type {{ catchId: string, typeId: string }[]} */
   let pending = [];
 
+  let _homeSuppressPush = false;
+
   /**
    * @type {{ id: string, typeId: string, name: string, x: number, y: number,
    *          path: {x:number,y:number}[], pathIdx: number, el: HTMLElement | null }[]}
@@ -126,6 +128,79 @@ const Home = (() => {
 
   function notifyCatch(typeId) {
     pending.push({ catchId: _uid(), typeId });
+    if (!_homeSuppressPush && typeof UserAppState !== 'undefined' && UserAppState.schedulePush) {
+      UserAppState.schedulePush();
+    }
+  }
+
+  function getPersistPayload() {
+    return {
+      pending: pending.map((p) => ({ catchId: p.catchId, typeId: p.typeId })),
+      residents: residents.map((r) => ({
+        id: r.id,
+        typeId: r.typeId,
+        name: r.name,
+        x: Math.round(r.x),
+        y: Math.round(r.y),
+      })),
+    };
+  }
+
+  /**
+   * Hydrate from `/api/user/app-state` `home` (or local cache). Idempotent; skips unknown typeIds.
+   */
+  function applyPersistPayload(h) {
+    if (!h || typeof h !== 'object') return;
+    _homeSuppressPush = true;
+    try {
+      if (Array.isArray(h.pending)) {
+        pending = h.pending
+          .filter((p) => p && p.catchId && p.typeId)
+          .map((p) => ({
+            catchId: String(p.catchId).slice(0, 64),
+            typeId: String(p.typeId).slice(0, 80),
+          }));
+      }
+      if (Array.isArray(h.residents)) {
+        residents = [];
+        for (const row of h.residents) {
+          if (!row || !row.id || !row.typeId) continue;
+          const name = (String(row.name || 'friend').trim() || 'friend').slice(0, 40);
+          const type = CREATURE_TYPES.find((t) => t.id === row.typeId);
+          if (!type) continue;
+          let x = Number(row.x);
+          let y = Number(row.y);
+          if (!Number.isFinite(x)) x = 0;
+          if (!Number.isFinite(y)) y = 0;
+          x = Math.max(0, Math.round(x));
+          y = Math.max(0, Math.round(y));
+          residents.push({
+            id: String(row.id).slice(0, 64),
+            typeId: String(row.typeId).slice(0, 80),
+            name,
+            x,
+            y,
+            path: [],
+            pathIdx: 0,
+            el: null,
+          });
+        }
+        _rebuildWalkGrid();
+        for (const r of residents) {
+          if (habitatW > 0 && habitatH > 0 && walkable && walkable.length) {
+            const start = _pixelToGrid(r.x, r.y);
+            if (walkable[start.gy] && walkable[start.gy][start.gx] === false) {
+              const sp = _randomWalkablePixel();
+              r.x = sp.x;
+              r.y = sp.y;
+            }
+          }
+        }
+        _syncAllResidentDOM();
+      }
+    } finally {
+      _homeSuppressPush = false;
+    }
   }
 
   function _defaultName(typeId) {
@@ -439,12 +514,18 @@ const Home = (() => {
         const name = raw || _defaultName(item.typeId);
         _addResident(item.typeId, name);
         pending.shift();
+        if (typeof UserAppState !== 'undefined' && UserAppState.schedulePush) {
+          UserAppState.schedulePush();
+        }
         showNext();
       };
 
       btnSkip.onclick = () => {
         _addResident(item.typeId, _defaultName(item.typeId));
         pending.shift();
+        if (typeof UserAppState !== 'undefined' && UserAppState.schedulePush) {
+          UserAppState.schedulePush();
+        }
         showNext();
       };
 
@@ -680,6 +761,8 @@ const Home = (() => {
     enter,
     leave,
     notifyCatch,
+    getPersistPayload,
+    applyPersistPayload,
     getResidents,
     pauseResidents,
     resumeResidents,

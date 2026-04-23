@@ -608,7 +608,7 @@ body.ext-ov-body.is-timer-dragging {
 /* Toast */
 .ext-notif {
   position: fixed;
-  top: 10px;
+  top: 130px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 2147483602;
@@ -662,18 +662,18 @@ body.ext-ov-body.is-timer-dragging {
 @keyframes ext-reward-burst-pop {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.55) rotate(-4deg);
+    transform: translate(-50%, -50% + 6px) scale(0.55) rotate(-4deg);
   }
   18% {
     opacity: 1;
-    transform: translate(-50%, calc(-50% - 6px)) scale(1.12) rotate(2deg);
+    transform: translate(-50%, calc(-50% + 8px)) scale(1.12) rotate(2deg);
   }
   40% {
     opacity: 1;
-    transform: translate(-50%, calc(-50% - 18px)) scale(1.05) rotate(0deg);
+    transform: translate(-50%, calc(-50% + 12px)) scale(1.05) rotate(0deg);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, calc(-50% - 64px)) scale(1.08) rotate(0deg);
+    transform: translate(-50%, calc(-50% + 16px)) scale(1.08) rotate(0deg);
   }
 }

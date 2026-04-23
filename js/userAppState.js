@@ -2,6 +2,7 @@
  * userAppState.js — sync game economy, habitat shop state, and creature bonds
  * to the backend (`/api/user/app-state`) when the user is logged in (JWT + api base).
  * Mirrors into localStorage as a cache for offline / same-device speed.
+ * `home` — pending name-this-catch queue + named residents (habitat) for sync + extension catches.
  */
 
 const UserAppState = (() => {
@@ -37,6 +38,9 @@ const UserAppState = (() => {
       if (typeof CreatureBond !== 'undefined' && CreatureBond.applyPersistPayload) {
         CreatureBond.applyPersistPayload(data.bonds || {});
       }
+      if (typeof Home !== 'undefined' && Home.applyPersistPayload) {
+        Home.applyPersistPayload(data.home || { pending: [], residents: [] });
+      }
       _remoteOk = true;
       return true;
     } catch (e) {
@@ -55,8 +59,12 @@ const UserAppState = (() => {
       const bonds = typeof CreatureBond !== 'undefined' && CreatureBond.getPersistPayload
         ? CreatureBond.getPersistPayload()
         : null;
+      const home =
+        typeof Home !== 'undefined' && Home.getPersistPayload
+          ? Home.getPersistPayload()
+          : { pending: [], residents: [] };
       if (!game || !habitat || !bonds) return;
-      TrackerApi.putUserAppState({ v: 1, game, habitat, bonds }).catch((e) => {
+      TrackerApi.putUserAppState({ v: 1, game, habitat, home, bonds }).catch((e) => {
         console.warn('UserAppState: remote save failed', e);
       });
     }, PUSH_DEBOUNCE_MS);
