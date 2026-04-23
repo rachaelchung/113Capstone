@@ -108,18 +108,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const gradeNoteParts = [];
     if (gradeSnap.percent != null) {
       gradeValueText = `${Math.round(gradeSnap.percent * 10) / 10}%`;
-      if (gradeSnap.isPartial) {
-        gradeNoteParts.push(
-          'partial: categories with no scored rows yet are omitted; remaining category weights are renormalized.',
-        );
-      }
     } else if (gradeSnap.reason) {
       gradeNoteParts.push(gradeSnap.reason);
     }
-    gradeNoteParts.push('blank max or earned fields are ignored for the average.');
-    const gradeNoteHtml = `<p class="tracker-syllabus-hint tracker-grade-current-note">${gradeNoteParts
-      .map((t) => escapeHtml(t))
-      .join(' ')}</p>`;
+    const gradeNoteHtml = gradeNoteParts.length
+      ? `<p class="tracker-syllabus-hint tracker-grade-current-note">${gradeNoteParts
+          .map((t) => escapeHtml(t))
+          .join(' ')}</p>`
+      : '';
     const flashMsg = courseDetailFlash;
     courseDetailFlash = null;
     const { assignments } = TrackerStore.state;
@@ -173,7 +169,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="tracker-modal-panel tracker-modal-panel--wide" role="dialog" aria-modal="true" aria-labelledby="courseDetailTitle">
         <button type="button" class="tracker-modal-close" id="courseDetailClose" aria-label="close">×</button>
         <h2 class="tracker-modal-title" id="courseDetailTitle">${escapeHtml(course.name)}</h2>
-        <p class="tracker-modal-lede">use the tabs to edit course info, dated assignments, and grade weights / scores.</p>
         ${flashMsg ? `<p class="tracker-status tracker-status--err" role="alert">${escapeHtml(flashMsg)}</p>` : ''}
         <div class="course-modal-tabs" role="tablist" aria-label="course sections">
           <button type="button" role="tab" class="course-modal-tab ${tabInfoActive ? 'course-modal-tab--active' : ''}" data-course-tab="info" aria-selected="${tabInfoActive}">course info</button>
@@ -203,7 +198,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
 
         <div class="course-modal-panel" data-course-panel="assignments" ${tabAsgActive ? '' : 'hidden'}>
-          <p class="tracker-modal-lede" style="margin-top:0">deadlines and points. extract from a syllabus file adds rows; optionally refresh grading weights when the model finds them.</p>
           <table class="tracker-assign-table">
             <thead><tr><th>name</th><th>due</th><th>pts</th><th>done</th><th></th></tr></thead>
             <tbody id="detailAssignBody">${assignRows || ''}</tbody>
@@ -232,7 +226,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <input type="checkbox" id="detailSyllabusReplaceWeights" checked />
             <span>replace grading weights when the syllabus lists them</span>
           </label>
-          <p class="tracker-syllabus-hint">.pdf syllabi are read on the server; .txt / .md / .html also work in the browser. word (.docx) still needs a text or html export.</p>
+
           <div class="tracker-modal-actions" style="border-top:none;padding-top:12px">
             <button type="button" class="tracker-btn tracker-btn--secondary" id="detailSaveAssignments">save assignments</button>
             <button type="button" class="tracker-btn tracker-btn--mint tracker-btn--small" id="detailParseFile">extract from file</button>
@@ -245,7 +239,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             <span class="tracker-grade-current-value">${escapeHtml(gradeValueText)}</span>
             ${gradeNoteHtml}
           </div>
-          <p class="tracker-modal-lede" style="margin-top:0">set category weights (percent of final). they usually sum to 100. you can paste weights from the syllabus using extract on the assignments tab, or edit here.</p>
           <p class="tracker-status" id="detailGradeWeightSum" aria-live="polite">weights total: ${escapeHtml(String(Math.round(weightSum * 1000) / 1000))}%</p>
           <table class="tracker-assign-table tracker-grade-cat-table">
             <thead><tr><th>category</th><th>weight %</th><th></th></tr></thead>
@@ -263,7 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <button type="button" class="tracker-btn tracker-btn--small" id="detailNewCatAdd">add category</button>
           </div>
           <h3 class="tracker-h1" style="margin:18px 0 8px">scores by assignment</h3>
-          <p class="tracker-syllabus-hint" style="margin-top:0">link each row to a category; enter max and earned here (or max on the assignments tab). click save grades to persist.</p>
+          
           <table class="tracker-assign-table">
             <thead><tr><th>assignment</th><th>category</th><th>max pts</th><th>earned</th></tr></thead>
             <tbody id="detailGradeAsgBody">${gradeAssignRows || ''}</tbody>
@@ -455,7 +448,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="tracker-modal-panel tracker-modal-panel--wide" role="dialog" aria-modal="true" aria-labelledby="addCourseTitle">
         <button type="button" class="tracker-modal-close" id="addCourseClose" aria-label="close">×</button>
         <h2 class="tracker-modal-title" id="addCourseTitle">new course</h2>
-        <p class="tracker-modal-lede">fill in the course, add any assignments by hand, or attach a syllabus file to extract deadlines after the course is created.</p>
         <div class="tracker-field">
           <label class="tracker-label" for="addName">course name</label>
           <input class="tracker-input" id="addName" maxlength="80" required />
@@ -477,7 +469,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <label class="tracker-label" for="addSyllabusFile">syllabus file (optional)</label>
           <input type="file" id="addSyllabusFile" class="tracker-file-input" />
         </div>
-        <p class="tracker-syllabus-hint">.pdf is extracted on the server; .txt / .md / .html work from the browser. scanned-only pdfs may fail.</p>
+       
         <p class="tracker-status" id="addCourseStatus" role="status"></p>
         <div class="tracker-modal-actions">
           <button type="button" class="tracker-btn" id="addCourseSubmit">create course</button>
@@ -620,7 +612,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.innerHTML = `
       <div class="tracker-courses-wrap">
         <h2 class="tracker-h1">courses</h2>
-        <p class="tracker-lede">tap a course to view details, assignments, and edits. use the plus button to add a new course.</p>
         <div class="courses-strip" id="coursesStrip">
           ${strip || '<p class="courses-empty">no courses yet — tap + to add one.</p>'}
         </div>
@@ -688,7 +679,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     root.innerHTML = `
       <h2 class="tracker-h1">calendar</h2>
-      <p class="tracker-lede">dated assignments only. tap a row to toggle done — coins are awarded only the first time you finish each assignment.</p>
       <div class="tracker-cal-head">
         <span class="tracker-cal-title">${escapeHtml(monthLabel)}</span>
         <div class="tracker-row" style="margin:0">
@@ -756,7 +746,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     root.innerHTML = `
       <h2 class="tracker-h1">to-do</h2>
-      <p class="tracker-lede">undated tasks live here until you drag them into the weekly board (they keep no due date). finishing a task awards a few coins once per task.</p>
       <form id="todoAddForm" class="tracker-row" style="align-items:flex-end">
         <div class="tracker-field" style="flex:2 1 280px">
           <label class="tracker-label" for="todoName">new task</label>
@@ -839,7 +828,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     root.innerHTML = `
       <h2 class="tracker-h1">weekly view</h2>
-      <p class="tracker-lede">drag assignments or to-dos onto a day. planned sub-tasks (like "read 5 pages") stay here only — they do not change real due dates.</p>
       <div class="tracker-week-nav">
         <button type="button" class="tracker-btn tracker-btn--secondary tracker-btn--small" id="wkPrev">← prev week</button>
         <span class="tracker-cal-title">${escapeHtml(weekLabel)}</span>
@@ -859,7 +847,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             .join('') || `<span style="font-size:0.8rem;color:var(--text-muted)">nothing left to drag — nice.</span>`}
         </div>
       </div>
-      <p class="tracker-footnote">drag the ⋮ handle to move a chip to another day. × removes it from this week only (not from your list). check the box when that slice is done — assignment and to-do coins each count only once per item, even if you uncheck later.</p>
     `;
 
     const wkGrid = root.querySelector('#wkGrid');

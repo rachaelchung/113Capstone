@@ -3,7 +3,13 @@
   "name": "head empty — focus overlay",
   "version": "0.1.0",
   "description": "Floating pomodoro timer and creature lane while you browse. Pauses on sites you mark as off-limits.",
+  "icons": {
+    "512": "icons/icon-512.png"
+  },
   "action": {
+    "default_icon": {
+      "512": "icons/icon-512.png"
+    },
     "default_title": "head empty — open menu for account / API settings",
     "default_popup": "popup.html"
   },
