@@ -1,34 +1,88 @@
-# head empty. no thoughts.
+# ☺︎ head empty. no thoughts.
 
-*for all those assignments you forget to do...and don't want to do.*
+*for all those assignments you forget to do…and don't want to do.*
+
+head empty is a gamified, all-in-one assignment tracker for students who would rather do literally anything else. Upload your syllabi at the start of the semester and an LLM fills in your courses, assignments, and grade weighting for you. Then use the pomodoro timer to actually get through the work — if your focused long enough, little creatures wander across your screen, and you click to catch them. Finish assignments to earn coins. Decorate your habitat. Repeat until you somehow graduate.
+
+There's a [web app](https://rachaelchung.github.io/113Capstone/) (landing page + tracker + habitat) and a companion [Chrome extension](./extension.md) that overlays the timer and habitat on top of every tab — and replaces distracting sites with your habitat during focus sessions.
+
+---
+
+## what's in the box
+
+- **pomodoro timer** — 25 / 5 / 25 / 5 / 25 / 5 / 25 / 15 (long break) cycle with a ring UI, phase auto-advance, and creature spawns during focus only
+- **creature habitat** — creatures cross the screen at random intervals while you focus; click to catch, feed, and bond with them
+- **assignment tracker** — courses, assignments, a drag-and-drop weekly plan, a month calendar, and an undated to-do list
+- **syllabus AI** — drop a `.pdf`, `.txt`, `.md`, or `.html` syllabus and OpenAI pulls out your assignments, categories, and weighting
+- **grade calculation** — weighted by category, renormalizes when some categories have no data yet
+- **accounts + sync** — email + password or Google sign-in; state (creatures, coins, assignments, plan) syncs to the backend
+- **chrome extension** — floating timer + creature lane on every tab, full-page overlay on sites you've marked off-limits (see [`extension.md`](./extension.md))
+- **no build step** — plain ES modules on the frontend, Flask + SQLAlchemy on the backend
+
+---
 
 ## running it
 
-Open the page on GitHub Pages: https://rachaelchung.github.io/113Capstone/
-Download the chrome extension from here: 
+The static frontend is deployed on **GitHub Pages**: https://rachaelchung.github.io/113Capstone/
+The API is deployed on **Render**: https://one13capstone.onrender.com
+The Chrome extension lives in [`extension/`](./extension/) and installs unpacked — see [`extension.md`](./extension.md).
 
-Open `index.html` for the marketing + sign-in page, or `app.html` for the habitat / timer / tracker. No build step, no dependencies.
+---
 
-For the best experience, use a local server (avoids any browser file:// quirks and matches API CORS):
+## running it *locally*
+
+If you just want to poke around the frontend, you can open `index.html` (landing page + sign-in) or `app.html` (habitat / timer / tracker) directly.
 
 ```bash
-# python
+# from the repo root, pick one:
 python -m http.server 8080
-
-# node (if you have npx)
 npx serve .
-
-.venv/bin/flask --app wsgi:app run --host 127.0.0.1 --port 8001
+# VS Code Live Server also works (usually on :5500)
 ```
 
-Then open [http://localhost:8080](http://localhost:8080) (or VS Code Live Server on port 5500). When the site is served over **http** from localhost, the app **probes** `http://127.0.0.1:8001/health` (and `:8001` on `localhost`) and uses your local Flask if it responds; otherwise it uses the URL in [`js/apiBaseConfig.js`](js/apiBaseConfig.js) (`window.HENN_REMOTE_API_BASE`). Set that variable to your **production API** (for example Render) before deploying the static site to GitHub Pages. HTTPS pages (such as `https://*.github.io`) cannot call `http://localhost`, so they always use the production URL from that file.
+Then open [http://localhost:8080](http://localhost:8080).
 
-### GitHub Pages + Render + extension
+### backend (optional, for auth + tracker sync + syllabus parsing)
 
-1. Deploy the API to Render (or similar) and set `CORS_ORIGINS` and `FRONTEND_ORIGIN` in the backend env to your GitHub Pages origin (see [`backend/.env.example`](backend/.env.example)).
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env          # fill in SECRET_KEY, OPENAI_API_KEY, and Google OAuth creds
+flask --app wsgi:app run --host 127.0.0.1 --port 8001
+```
+
+### deploying your own copy (GitHub Pages + Render + extension)
+
+1. Deploy the backend to Render (or similar). In the backend env, set `CORS_ORIGINS` and `FRONTEND_ORIGIN` to your GitHub Pages origin — see [`backend/.env.example`](backend/.env.example).
 2. In Google Cloud Console, set the OAuth redirect URI to `{your Render API URL}/api/auth/google/callback`.
 3. Set the same production API URL (no trailing slash) in **`js/apiBaseConfig.js`** and **`extension/background.js`** (`HENN_REMOTE_API_BASE`).
-4. Reload the unpacked extension after editing the manifest if you use a **custom domain** (add your origin next to `https://*.github.io/*` under `content_scripts` → `content-app-auth.js`).
+4. If you use a custom domain, add your origin next to `https://*.github.io/*` under `content_scripts` → `content-app-auth.js` in `extension/manifest.json`, then reload the unpacked extension.
+5. **OPTIONAL** Render dies after a couple minutes of inactivity and thus, the SQLite database is reset. To avoid this, you can create a simple Cloudflare agent as I did to poke at your Render site every couple of minutes. 
+
+```bash
+export default {
+  async fetch(request, env, ctx) {
+    return new Response("Worker online");
+  },
+
+  async scheduled(event, env, ctx) {
+    const urls = [
+      "https://one13capstone.onrender.com",
+    ];
+
+    for (const url of urls) {
+      try {
+        await fetch(url, { method: "GET" });
+        console.log("Ping OK:", url);
+      } catch (err) {
+        console.error("Ping Failed:", url, err);
+      }
+    }
+  }
+};
+```
 
 ---
 
@@ -38,7 +92,7 @@ Then open [http://localhost:8080](http://localhost:8080) (or VS Code Live Server
 113Capstone/
 ├── index.html              # landing + log in / sign up (calls backend auth)
 ├── app.html                # main app (habitat, timer, tracker)
-├── tracker.html            # standalone assignment tracker entry
+├── tracker.html            # legacy entry — redirects to app.html
 ├── favicon.ico
 │
 ├── css/
@@ -126,27 +180,27 @@ Then open [http://localhost:8080](http://localhost:8080) (or VS Code Live Server
 
 ### timer phases
 
-Full 4-session pomodoro cycle defined in `timer.js`:
+Full 4-session pomodoro cycle, defined in [`js/timer.js`](js/timer.js):
+
 `focus (25m) → break (5m) → focus → break → focus → break → focus → long break (15m)`
+
+Phases auto-advance. The ring UI shows progress, the label shows the current phase, and the timer exposes `isFocus()` / `isRunning()` so the habitat and tracker can react.
 
 ### creature spawning
 
 - Creatures only appear during active **focus** phases
-- Spawn interval: random 8–20 seconds
+- Spawn interval: random 2–5 minutes (rewards sustained focus)
 - Click a creature to catch it before it walks offscreen
-- Forbidden mode pauses spawning and clears all active creatures
+- Navigating to a forbidden site (via the extension) pauses spawning and clears active creatures
 
 ### economy
 
-
-| Currency | How earned                         | Planned use                              |
-| -------- | ---------------------------------- | ---------------------------------------- |
-| Food     | 1 per 10 focus-seconds             | Keep creatures happy, attract rare types |
-| Coins    | On assignment completion (phase 2) | Habitat decorations, shop items          |
-
+| Currency | How earned                                       | Used for                                 |
+| -------- | ------------------------------------------------ | ---------------------------------------- |
+| Food     | 1 per 10 focus-seconds                           | Keep creatures happy, attract rare types |
+| Coins    | Awarded when you mark an assignment complete     | Habitat backgrounds + decorations        |
 
 ### rarity weights
-
 
 | Rarity   | Chance | Current creatures      |
 | -------- | ------ | ---------------------- |
@@ -154,29 +208,31 @@ Full 4-session pomodoro cycle defined in `timer.js`:
 | Uncommon | 30%    | sparky                 |
 | Rare     | 10%    | raro                   |
 
+### assignment tracker
 
----
+The tracker lives inside `app.html` (the standalone `tracker.html` just redirects there, it was used for testing). It gives you four views:
 
-## phase 2 — assignment tracker integration
+- **courses** — add courses for the semester, upload a syllabus, pick a color, edit categories / weighting
+- **calendar** — monthly view of all *dated* assignments, grouped by course color
+- **to-do** — undated tasks that live in their own list until you drag them into a day
+- **weekly plan** — drag assignments and to-dos onto specific days without changing their master due date
 
-Things to hook up:
+Syllabus upload sends the file (PDF) or extracted text (HTML / TXT / MD) to `POST /api/parse-syllabus`, which calls OpenAI via the Python backend (so the key never ships to the browser). The LLM returns structured assignments + grade categories, which get merged into the course.
 
-- `Game.awardCoins(n)` — call this when the user marks an assignment complete
-- `Timer.isFocus()` / `Timer.isRunning()` — expose to the assignment panel
-- Persist `collection`, `food`, `coins` to `localStorage` or a backend
+Grades are calculated per category using the weighting from the syllabus (or whatever you override manually), and renormalize when some categories haven't been graded yet so you get a sensible in-progress number.
 
-## phase 3 — chrome extension
+### auth + sync
 
-- Move `app.html` → `popup.html` (or a slim entry)  
-- Add `manifest.json` (Manifest V3)
-- `content_script.js` detects forbidden domains → sends message to `game.js`
-- Overlay `iframe` injects the habitat + floating timer into any page
+- Sign up / sign in with **email + password**, or sign in with **Google**
+- Sessions are Flask sessions for the web app; the Chrome extension uses a JWT bridged from the web app's session cookie (see [`extension.md`](./extension.md))
+- On login, the frontend loads per-user state (collection, coins, food, tracker data) from `/api/app-state` and writes changes back as you interact
+- If you're offline or signed out, the tracker keeps working against `localStorage`
 
 ---
 
 ## adding new creatures
 
-Open `js/creatures.js` and add an entry to `CREATURE_TYPES`:
+Open [`js/creatures.js`](js/creatures.js) and add an entry to `CREATURE_TYPES`:
 
 ```js
 {
@@ -190,4 +246,15 @@ Open `js/creatures.js` and add an entry to `CREATURE_TYPES`:
 }
 ```
 
-That's it — spawning and collection pick it up automatically.
+That's it — spawning, the collection grid, and the bond system pick it up automatically. If you want the creature to show up in the extension too, mirror the entry into [`extension/data/creatures.json`](extension/data/creatures.json).
+
+---
+
+## related
+
+- **live site:** https://rachaelchung.github.io/113Capstone/
+- **chrome extension doc and download:** https://github.com/rachaelchung/headempty-chromeextension [`extension.md`](./extension.md)
+- **full spec:** [`SPEC.md`](./SPEC.md)
+- **tracker acceptance audit:** [`TRACKERCRITERIA.md`](./TRACKERCRITERIA.md)
+- **prompt log:** ['PROMPT_LOG.md'](./PROMPT_LOG.md)
+- **final project reflection:** ['REFLECTION.md'](./REFLECTION.md)

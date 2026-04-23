@@ -121,8 +121,8 @@ const ExtGame = (() => {
 
   function _scheduleNextSpawn() {
     _clearSpawnQueue();
-    /* 8–20s */
-    const delay = 8000 + Math.random() * 12000;
+    /* 2–5 minutes */
+    const delay = 120000 + Math.random() * 180000;
     spawnTimeout = setTimeout(_spawnCreature, delay);
   }
 

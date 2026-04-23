@@ -286,61 +286,8 @@ async function putRemoteStateFull(state) {
 }
 
 function seedDemoIfEmpty(state) {
-  if (state.courses.length || state.assignments.length || state.todos.length) return state;
-  const c1 = uid();
-  const c2 = uid();
-  const catProjects = uid();
-  const catParticipation = uid();
-  const monday = startOfWeekMonday(new Date());
-  const due1 = toYmd(addDays(monday, 3));
-  const due2 = toYmd(addDays(monday, 5));
-  return {
-    ...state,
-    courses: [
-      {
-        id: c1,
-        name: 'cs capstone',
-        color: DEFAULT_COURSE_COLORS[0],
-        professor: 'tbd',
-        scheduleText: 'tue/thu 2pm',
-        gradeCategories: [
-          { id: catProjects, name: 'projects', weightPercent: 50 },
-          { id: catParticipation, name: 'participation', weightPercent: 50 },
-        ],
-      },
-      { id: c2, name: 'design studio', color: DEFAULT_COURSE_COLORS[1], professor: '', scheduleText: '', gradeCategories: [] },
-    ],
-    assignments: [
-      {
-        id: uid(),
-        name: 'milestone 1 writeup',
-        dueDate: due1,
-        courseId: c1,
-        completed: false,
-        coinRewardGranted: false,
-        source: 'manual',
-        pointsValue: '',
-        categoryId: catProjects,
-        earnedPoints: '',
-      },
-      {
-        id: uid(),
-        name: 'reading reflection',
-        dueDate: due2,
-        courseId: c2,
-        completed: false,
-        coinRewardGranted: false,
-        source: 'manual',
-        pointsValue: '',
-        categoryId: '',
-        earnedPoints: '',
-      },
-    ],
-    todos: [
-      { id: uid(), taskName: 'email advisor', completed: false, coinRewardGranted: false },
-      { id: uid(), taskName: 'sketch weekly plan ui', completed: false, coinRewardGranted: false },
-    ],
-  };
+  // Ship with an empty tracker — no pre-seeded courses, assignments, or todos.
+  return state;
 }
 
 const TrackerStore = {

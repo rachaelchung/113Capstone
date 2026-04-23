@@ -7,7 +7,7 @@
 const Game = (() => {
   /* ── state ───────────────────────────────────── */
   let food    = 0;
-  let coins   = 500;
+  let coins   = 0;
   let caught  = 0;
   let foodAccumulator = 0;   // fractional food; 1 food per 10 active focus-seconds
 
@@ -243,7 +243,7 @@ const Game = (() => {
 
   function _scheduleNextSpawn() {
     _clearSpawnQueue();
-    const delay = 8000 + Math.random() * 12000; // 8–20 s between spawns
+    const delay = 120000 + Math.random() * 180000; // 2–5 minutes between spawns
     spawnTimeout = setTimeout(_spawnCreature, delay);
   }
 
